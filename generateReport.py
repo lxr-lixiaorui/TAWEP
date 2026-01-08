@@ -3,7 +3,7 @@ import time
 
 
 
-def generateReport(srcthirty,srcfive,srcA,srcB,srcC,srcD,probA,probB,probC,probD,imprA,imprB,imprC,imprD,rewr,passage,question_num,stamp=time.time(),current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),file_path='static/table/Record'):
+def generateReport(srcthirty,srcfive,srcA,srcB,srcC,srcD,probA,probB,probC,probD,imprA,imprB,imprC,imprD,rewr,analysis,latter,grammar,passage,question_num,stamp=time.time(),current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),file_path='static/table/Record'):
     template =f'''
 <html>
 <head>
@@ -39,6 +39,8 @@ def generateReport(srcthirty,srcfive,srcA,srcB,srcC,srcD,probA,probB,probC,probD
             <div class="item" id="srcD">{srcD}</div>
             </div>
             
+
+            
             <style>
             .grid-container {{
             display: grid;
@@ -52,6 +54,32 @@ def generateReport(srcthirty,srcfive,srcA,srcB,srcC,srcD,probA,probB,probC,probD
             </style>
                         
             <br/>
+
+            <p style="font-size: 14px;">拼写错误数量：</p>
+            <p style="font-size: 17px;" id="grammar">{grammar}</p>
+            <p style="font-size: 14px;">语法错误数量：</p>
+            <p style="font-size: 17px;" id="latter">{latter}</p>
+
+            <script>
+                            spelling = Number({latter})
+                            if (spelling <=2){{
+                                document.getElementById("latter").style.color = "green"
+                            }} else if (spelling >2 && spelling <=5){{
+                                document.getElementById("latter").style.color = "orange"
+                            }} else{{
+                                document.getElementById("latter").style.color = "red"
+                            }}
+
+                            // Grammar mistake coloring
+                            grammar = Number({grammar})
+                            if (grammar <=3){{
+                                document.getElementById("grammar").style.color = "green"
+                            }} else if (grammar >3 && grammar <=6){{
+                                document.getElementById("grammar").style.color = "orange"
+                            }} else{{
+                                document.getElementById("grammar").style.color = "red"
+                            {{
+            </script>
 
             <h3 style="color:gray; font-size: 18px;">> Problem Analysis</h3>
             <p  id="probA"> - Content Relevence: {probA}</p>
@@ -70,6 +98,9 @@ def generateReport(srcthirty,srcfive,srcA,srcB,srcC,srcD,probA,probB,probC,probD
 
             <h3 style="color:gray; font-size: 18px;">> AI Rewrite</h3>
             <p id="rewr">{rewr}</p>
+
+            <h3 style="color:gray; font-size: 18px;">> Sentence-by-sentence linguistic analysis</h3>
+            <p id="analysis">{analysis}</p>
 
             <br/><br/>
 
