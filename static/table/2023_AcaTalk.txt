@@ -680,11 +680,89 @@ Paul:
 Sharing knowledge is crucially important to most scientists. Scientists usually publish the details of their discoveries in scientific journals, which means that everyone can see what the scientists have accomplished. Being recognized as the person who made a discovery is the biggest reward for any scientist. When scientists keep their discoveries secret, they lose that recognition. That is very unsatisfying.
 Prof:
 Today we will discuss an important topic in secondary education: oral (spoken) presentations. In many courses, high school students are required to research a topic and then make an oral presentation about the topic to classmates. Some people believe it is important for students to be able to speak about what they have learned instead of just writing about it. What do you think? Is it a good idea for secondary teachers to assign oral presentations? Why or why not?
-Claire: Most high school students would be happy if their teachers assigned no oral presentations, but I believe it is crucial for students to learn public speaking skills. In being required to speak in front of classmates, students can demonstrate how they are able to engage with an audience and, thus, they will master a critical personal and job skill.
-
-Peter:
-I think secondary teachers should not require students to make oral presentations. Many people do not really need to develop public speaking skills because most jobs do not require workers to speak before large groups of coworkers. So by giving oral presentations, students may acquire a skill that is not particularly valuable.
 
 Claire:
 Most high school students would be happy if their teachers assigned no oral presentations, but I believe it is crucial for students to learn public speaking skills. In being required to speak in front of classmates, students can demonstrate how they are able to engage with an audience and, thus, they will master a critical personal and job skill.
-Peter: I think secondary teachers should not require students to make oral presentations. Many people do not really need to develop public speaking skills because most jobs do not require workers to speak before large groups of coworkers. So by giving oral presentations, students may acquire a skill that is not particularly valuable.
+
+Peter:
+I think secondary teachers should not require students to make oral presentations. Many people do not really need to develop public speaking skills because most jobs do not require workers to speak before large groups of coworkers. So by giving oral presentations, students may acquire a skill that is not particularly valuable.
+Dr Gupta:
+In recent years, with the increasing prevalence of online payment methods, we’ve seen a significant decrease in the use of cash for everyday transactions. This shift has prompted a debate about whether it’s a positive or negative development. So, let me pose this question to you: With the decrease in cash usage due to the rise of online payments, do you consider this trend to be positive or negative? Why or why not?
+
+Paul:
+This is indeed a positive development because it offers tremendous convenience. We can complete transactions with just our smartphones, eliminating the need to carry a wallet full of cash and coins. This convenience not only streamlines our daily routines but also reduces the risk of theft or loss associated with physical cash.
+
+Claire:
+This trend is negative because it disconnects us from our spending habits. When we use cash, we have a tangible sense of how much money we’re spending, which helps us keep track of our expenses. With digital payments, it’s easier to lose sight of our financial transactions, potentially leading to overspending and financial mismanagement.
+Dr. Achebe:
+This semester, we are studying how children learn and what influences their cognitive development. We know that children are affected both positively and negatively by what they see and hear. Many parents allow their children to watch entertaining or educational videos on devices like smartphones or tablets. Overall, do you think watching a lot of online videos is harmful to children? Why or why not?
+
+Andrew:
+I think watching online videos is harmful to children. Children under two years old need to develop communication skills by interacting with other people; passively watching videos exposes them to language, but it's not the same. Also, even for older children, sitting and staring at a device means they are not moving and exercising.
+
+Claire:
+I agree with Andrew that very young children who are learning to communicate should not watch a lot of videos. However, for children who are past that stage, videos can be great. Lots of kids’ videos are about animals and nature. Most kids will never see a whale in its natural environment, but online, they can learn all about whales.
+Doctor Achebe:
+This week, we’ll be discussing the future of education. Let’s focus now on the following viewpoint: it is no longer useful to spend many years pursuing a traditional specialized university degree in a single field, such as communications or economics. Instead, it makes more sense for most people to complete several shorter certification programs and earn certificates in, for example, project management, computer programming, graphic design, and so on. Do you agree or disagree with this viewpoint? Why?
+
+Kelly:
+I strongly support this approach because it aligns with the changing preferences of many individuals in the modern world who often wish to switch majors or career paths. Embracing certification programs allows people to explore and pursue the fields they are passionate about without the commitment of lengthy degree programs.
+
+Andrew:
+University education is a superior choice due to its comprehensive and specialized nature. While certification programs offer quick training, universities provide a more in-depth understanding of a subject. They encourage critical thinking, research skills and a broader knowledge base. University degrees often lead to higher earning potential and career opportunities.
+Dr. Diaz:
+This week, we discussed the importance of role models and opinion makers in society. One idea we discussed was the widespread impact of “influencers.” Influencers are people who are very active posting on social media and who have many followers. Influencers’ posts and opinions can influence their followers’ choices on everything from fashion to politics. In your opinion, do social media influencers generally have a positive or negative effect on their followers? Why do you think so?
+
+Kelly:
+I think the influencers’ effect is generally positive. People can learn about the latest trends and topics in a very quick and efficient way by following influencers. In the past, people had to spend time looking through magazines or visiting boutiques to even know what was trending.
+
+Paul:
+I think influencers generally have a negative effect because they have far too much influence. I can think of one influencer who only has to mention a particular kind of sports shoe, and the next day they'll be sold out. The followers aren’t really thinking for themselves; they’re just blindly following the influencers’ choices.
+Dr. Diaz:
+With so many opportunities to connect nowadays, some people believe that no matter which country we come from, we have more similarities than we have differences. However, others have observed that differences between themselves and people from other countries are growing. In your view, are differences between people from different countries increasing, or are they diminishing? Why?
+
+Claire:
+I think the differences among us are decreasing as our exposure to products from other countries grows. We can enjoy food from any country. We can watch movies made in faraway places. We can go to a store and buy authentic goods from around the world. These things become part of our normal life and make our differences seem smaller.
+
+Paul:
+I understand what Claire is saying, but for some people, being exposed to differences makes them retreat into their own corner even more. Look at social media. We are exposed to many different people and ideas, but a lot of people talk to only those they agree with and ignore the rest. This only makes the differences between people increase.
+Dr. Achebe:
+Many areas are trying to reduce fossil fuel consumption because such fuel causes pollution and may contribute to climate change. To this end, some local governments want to find ways to encourage more people to use electric vehicles. In preparation for a class discussion on this issue, please post a response indicating what policy or initiative you would recommend that governments implement to encourage more use of electric vehicles, and please explain why you think so.
+
+Kelly:
+I live in an apartment building and would have difficulty charging an electric vehicle at home. I think that governments should offer financial support to encourage places such as shopping districts to install a large number of charging stations, maybe even free ones, that the public could use.
+
+Paul:
+People in my city often deal with long commutes in heavy traffic. But if my local government could set aside lanes on the high-traffic roadways that only electric cars could use, that might encourage people to purchase such a vehicle because they would have shorter and easier commutes.
+Dr. Achebe:
+In the next few weeks, we'll be talking about urban traffic management. Let’s begin by discussing one popular idea-creating car-free central zones. Some cities around the world have recently designated their downtown areas as being automobile-free, which means that vehicles are not allowed to enter the city centers. Do you think that more cities should make their central zones car-free? Why or why not?
+
+Claire:
+I support the idea of establishing free-car zones, because this will result in one important benefit for city residents: it will be better for their health. Instead of driving everywhere, people will be encouraged to walk or cycle more. It would be a great way to incorporate exercise into people's routines.
+
+Paul:
+It sounds like a good idea, but I’m skeptical. My main concern is that many businesses located in the city centers, such as shops and restaurants, may suffer because the customers will no longer be able to reach those businesses by car. For some customers, if they can’t drive, they won’t go at all.
+Doctor Gupta:
+Today, we will discuss a topic that is important for students and the public at large: namely, how to prioritize spending, given the limited funding available for schools. Some people think schools should spend more money on school teachers’ salaries because, if the salaries improved, more qualified people will be attracted to the profession. Others believe the money should be spent on additional resources such as books and computers. Which viewpoint do you agree with?
+
+Kelly:
+I believe that increasing school teachers’ pay would increase the quality of education. If they made more money, people would consider teaching as a profession instead of going into private industry. We need our smartest people in the classroom.
+
+Paul:
+I think school teachers already make enough money and already deliver high-quality education. I’m not sure that increasing their salaries would have much effect. However, schools are always in need of new equipment or facilities. Knowledge and technology are always growing and changing, and we need to prepare students with the most up-to-date materials possible.
+Dr. Achebe:
+This week, we'll be discussing ways in which schools can help expose their students (aged 5-18) to learning experiences beyond the classroom. Let’s begin by discussing one popular idea that some schools are considering - offering outdoor classes once a month. On the day of outdoor classes students will be transported to local parks or nature preserves, and teachers can help students explore nature and learn about the environment. Do you think this is a good idea? Why or why not?
+
+Kelly:
+Having outdoor classes once a month seems like an exciting way of providing students with interesting hands-on experiences. However, I don’t think these classes would be a worthwhile use of instructional time and school resources. These classes could put substantial pressure on the school’s financial resources and on teachers, who may have to redesign their lesson plans.
+
+Andrew:
+On the other hand, outdoor classes can increase students’ motivation to learn about the interconnectedness of the natural world. These classes could provide great opportunities to teach students about pressing environmental issues, such as pollution, and ways to address these problems. It would deepen their understanding beyond what books alone could achieve and would be time well spent.
+Dr. Diaz:
+We've been discussing employee working arrangements-whether employees should report to an office or work at home. Some businesses require all employees to work in the office. Others choose not to have a physical office and have all employees work from home. In industries where remote work is possible what is the most important factor for employers to consider when deciding where employees should work, and why?
+
+Claire:
+I don’t think businesses should allow their employees to work from home, because creating a sense of community and camaraderie among employees is so important for the success of a business, especially if it's a small business. It is challenging to develop that dynamic when employees are not together physically in the same space.
+
+Andrew:
+I think the most important thing to consider is the bottom line: keeping company expenses down. For example, requiring all employees to work from home might be the best option from an economic standpoint. Renting office space is expensive, as are the utility bills. Think of how much money a business could save if employees worked from home.

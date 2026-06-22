@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request,jsonify
+import json
+from flask import Flask, render_template, request,jsonify, Response, stream_with_context
 from generateReport import generateReport
 app = Flask(__name__)
 
@@ -28,9 +29,67 @@ def extract_answer_from_file(file_path):
         lines = file.read().splitlines()
         lines = ['Answers List'] + lines
         return lines
+
+def sse_event(event, data):
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+def normalize_ai_field(index, value):
+    if index == 16:
+        return value.strip()
+    return value.replace("***","\n<br/>\n",-1).strip()
+
+def completed_sections(fields, emitted_sections):
+    if len(fields) >= 4 and 'scores' not in emitted_sections:
+        emitted_sections.add('scores')
+        scorethirty, scorefive = calculate_score(fields)
+        yield sse_event('scores', {
+            'srcThir': scorethirty,
+            'srcFive': scorefive,
+            'srcA': fields[0],
+            'srcB': fields[1],
+            'srcC': fields[2],
+            'srcD': fields[3],
+        })
+
+    if len(fields) >= 8 and 'problem' not in emitted_sections:
+        emitted_sections.add('problem')
+        yield sse_event('problem', {
+            'probA': fields[4],
+            'probB': fields[5],
+            'probC': fields[6],
+            'probD': fields[7],
+        })
+
+    if len(fields) >= 12 and 'improvements' not in emitted_sections:
+        emitted_sections.add('improvements')
+        yield sse_event('improvements', {
+            'imprA': fields[8],
+            'imprB': fields[9],
+            'imprC': fields[10],
+            'imprD': fields[11],
+        })
+
+    if len(fields) >= 13 and 'rewrite' not in emitted_sections:
+        emitted_sections.add('rewrite')
+        yield sse_event('rewrite', {'rewr': fields[12]})
+
+    if len(fields) >= 16 and 'analysis_counts' not in emitted_sections:
+        emitted_sections.add('analysis_counts')
+        yield sse_event('analysis_counts', {
+            'analysis': fields[13],
+            'latter': fields[14],
+            'grammar': fields[15],
+        })
+
+    if len(fields) >= 17 and 'essay' not in emitted_sections:
+        emitted_sections.add('essay')
+        yield sse_event('essay', {'annotationJson': fields[16]})
 file_path = 'static/table/2023_AcaTalk.txt '
 result = extract_data_from_file(file_path)
 print(len(result))
+question_num = 1
+question = [result[i] for i in range(0, 6)]
+nameA, nameB, nameTea = question[2], question[4], question[0]
 @app.route('/choose_paper', methods=['POST'])
 def choose_paper():
     # try:
@@ -76,6 +135,12 @@ def view():
 
 @app.route('/submit_answer', methods=['POST'])
 def submit_answer():
+    global question_num, question, nameA, nameB
+    if 'question' not in globals():
+        question_num = 1
+        question = [result[i] for i in range(0, 6)]
+        nameA, nameB = question[2], question[4]
+
     global toEvaluateAnswer
     toEvaluateAnswer = request.form.get('answer')
     from openai import OpenAI
@@ -112,7 +177,8 @@ def submit_answer():
                 你还需要逐句分析语言语法问题，标出并改正以下错误：拼写错误（只限于词根的拼写错误，如excited写exciting不算），标点和句法错误（如逗号黏连，分号后大写等），词性错误，变形错误（如主谓不一致，该写excited的时候写exciting），冠词错误（如元音开头词使用a，缺少the等），非谓语错误，成分残缺等（尤其是从句中），生硬或奇怪的表达（如increase numbers of friends）。
                 逐句分析格式为：用户答案的第一句，在错误处使用[错误序号]标记，[]在错误有问题的单词或词组后写，若单词有很多问题则使用逗号隔开，如[1,2]，若没有则不标注***错误序号:错误细节（简单说一下，如某某词拼错，逗号黏连，主语I与谓语provides不匹配）***直到所有错误序号及细节列出完毕。输出按照刚才错误改正的句子，仅改变语法和句子逻辑，不要改变句意***后面的句子以此类推。
                 输出格式如下：
-                [A项的5分分数]@@@[B项的5分分数]@@@[C项的5分分数]@@@[D项的5分分数]@@@[A的问题]@@@[B的问题]@@@[C的问题]@@@[D的问题]@@@[A的优化方案]@@@[B的优化方案]@@@[C的优化方案]@@@[D的优化方案]@@@[最后呈现的文章]@@@[语言语法问题逐句分析]@@@[错误的单词拼写数量，只写数字（只限于词根的拼写错误，如excited写exciting不算）]@@@[语法错误,直接写数字（标点和句法错误（如逗号黏连，分号后大写等），词性错误，变形错误（如主谓不一致，该写excited的时候写exciting），冠词错误（如元音开头词使用a，缺少the等），非谓语错误，成分残缺等（尤其是从句中）。））]
+                [A项的5分分数]@@@[B项的5分分数]@@@[C项的5分分数]@@@[D项的5分分数]@@@[A的问题]@@@[B的问题]@@@[C的问题]@@@[D的问题]@@@[A的优化方案]@@@[B的优化方案]@@@[C的优化方案]@@@[D的优化方案]@@@[最后呈现的文章]@@@[语言语法问题逐句分析]@@@[错误的单词拼写数量，只写数字（只限于词根的拼写错误，如excited写exciting不算）]@@@[语法错误,直接写数字（标点和句法错误（如逗号黏连，分号后大写等），词性错误，变形错误（如主谓不一致，该写excited的时候写exciting），冠词错误（如元音开头词使用a，缺少the等），非谓语错误，成分残缺等（尤其是从句中）。））]@@@[My Essay原文标注JSON]
+                My Essay原文标注JSON必须是严格JSON数组，不要使用Markdown代码块，格式为：[{{"text":"原文中完全连续出现的词/短语/句子","type":"grammar","problem":"问题说明","suggestion":"改进方案"}}]。JSON部分必须使用双引号，不受第7条单引号要求影响。type只能是grammar、spelling、wording之一：grammar代表语法问题，spelling代表词汇拼写问题，wording代表用词不当问题。text必须使用写作答案中原样出现的片段，不要放改正后的文本。尽量覆盖逐句分析中指出的主要错误。
                 注意事项： 2. 所有5分分数直接显示成x.x的一位小数浮点格式(如4.2) 3. 请将生成的相应内容替换回答中的[]内容 4. 其中不同内容直接像上方一样使用'@@@'连接，便于分割 5. 所有换行符请替换成'***'，便于识别，不要直接换行！ 6.除了文章、引用文章、替换词使用英文外，其他请用中文 7.使用单引号而非双引号 8.语言和语法错误中请将所有错误条目在原句中标记，不要出现原句标记只到[6]，但是却指出了8个点 9.语言和语法错误的编号应是整篇文章连续的，不要每句话重新从1开始数 10. 严格按照以上的格式，不要添加其他内容！
                 注意： 仅评价“写作答案”，你的评分和改进措施不应该包含{nameA}和{nameB}的回答！
                 '''
@@ -124,35 +190,68 @@ def submit_answer():
         debug_mode = True
 
 
-    if not debug_mode:
-        response = client.chat.completions.create(
-            model="deepseek-reasoner",
-            messages=[
-                {"role": "system", "content": system_prompt
-                },
-                {"role": "user", "content": user_prompt},
-            ],
-            stream=False
-        )
+    def stream_response():
+        fields = []
+        emitted_sections = set()
+        pending = ''
 
-        extractedAiResponse = response.choices[0].message.content
-        extractedAiResponse = extractedAiResponse.replace("***","\n<br/>\n",-1)
+        def accept_text(text):
+            nonlocal pending
+            pending += text
+            events = []
+            while '@@@' in pending:
+                field, pending = pending.split('@@@', 1)
+                fields.append(normalize_ai_field(len(fields), field))
+                events.extend(completed_sections(fields, emitted_sections))
+            return events
 
-        entryList = extractedAiResponse.split('@@@') 
-        entryList = calculate_score(entryList) + entryList
-        entryList = entryList + [generateReport(*entryList,toEvaluateAnswer,question_num)]
-        print(entryList)
-        # for i in entryList:
-        #     print(i)
-        return jsonify(entryList)
-    else:
-        extractedAiResponse = "1@@@5@@@4.0@@@3.8@@@3.5@@@3.8@@@1. 未直接回应教授问题的'positive/negative'核心框架***2. 企业案例与个人网购的衔接不够紧密@@@1. 企业案例缺少对'效率提升'的具体解释***2. 个人网购段落缺乏对'安全保障'的展开@@@1. 拼写错误：internat→internet***2. 重复词：definitely(3次)→certainly/unquestionably***3. 基础词：good→commodity/product***4. 简单词：make→facilitate/enable@@@1. 段落间过渡生硬***2. 结论缺乏分论点总结@@@A. 在首段明确立场'This is undoubtedly positive'***B. 增加过渡句'While corporate benefits are evident, individuals also gain...'@@@B. 解释'跨国支付如何缩短交易时间'***说明'支付安全如何防止欺诈'@@@C. 错误修正：***1. evlution→evolution***2. boarder→boundaries***3. perchase→purchase***4. sonsiderably→considerably***替换建议：***1. definately→undoubtedly/certainly***2. payment→transaction/digital currency***3. improve→enhance/optimize***4. range→spectrum/diversity@@@D. 添加连接词'Furthermore/Moreover'***结论总结分论点'global accessibility and personal convenience'@@@In the internet era, the evolution of payment systems has undoubtedly enhanced transactional convenience while expanding commercial boundaries. I firmly believe this shift is positive as it creates unprecedented opportunities for both businesses and individuals.***While traditional cash limits transactions to local merchants, digital currency enables effortless global commerce. Consider multinational corporations in Asia requiring daily transfers of millions to European partners. Physical cash transportation would be impractical, but through secure platforms like VISA, such complex transactions conclude within seconds. This efficiency not only optimizes operational processes but also fuels international trade in our globalized economy.***Furthermore, digital transactions empower individual consumers. The instantaneous nature of online payments, coupled with robust security measures, facilitates seamless e-commerce experiences. Users can confidently purchase specialized products from overseas vendors—opportunities unimaginable in the cash-dominant era. Unlike physical currency that restricts shopping to neighborhood stores, digital systems provide access to a global marketplace, dramatically enriching consumer choices.***The transition to cashless systems ultimately fosters economic connectivity on an unprecedented scale. By eliminating geographical constraints and ensuring transaction reliability, modern payment methods lay the foundation for a more integrated world economy, benefiting enterprises and consumers alike through enhanced accessibility and operational efficiency. (229 words)" 
-        extractedAiResponse = extractedAiResponse.replace("***","\n<br/>\n",-1)
-        entryList = extractedAiResponse.split('@@@')
-        entryList = calculate_score(entryList) + entryList
-        entryList = entryList + [generateReport(*entryList,toEvaluateAnswer,question_num)]
-        print(entryList)
-        return jsonify(entryList)
+        try:
+            yield sse_event('start', {'message': 'AI is evaluating...'})
+
+            if not debug_mode:
+                response = client.chat.completions.create(
+                    model="deepseek-reasoner",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    stream=True
+                )
+
+                for chunk in response:
+                    delta = chunk.choices[0].delta
+                    content = getattr(delta, 'content', None)
+                    if content:
+                        for event in accept_text(content):
+                            yield event
+            else:
+                extractedAiResponse = "4.0@@@3.8@@@3.5@@@3.8@@@1. 未直接回应教授问题的'positive/negative'核心框架***2. 企业案例与个人网购的衔接不够紧密@@@1. 企业案例缺少对'效率提升'的具体解释***2. 个人网购段落缺乏对'安全保障'的展开@@@1. 拼写错误：internat→internet***2. 重复词：definitely(3次)→certainly/unquestionably***3. 基础词：good→commodity/product***4. 简单词：make→facilitate/enable@@@1. 段落间过渡生硬***2. 结论缺乏分论点总结@@@A. 在首段明确立场'This is undoubtedly positive'***B. 增加过渡句'While corporate benefits are evident, individuals also gain...'@@@B. 解释'跨国支付如何缩短交易时间'***说明'支付安全如何防止欺诈'@@@C. 错误修正：***1. evlution→evolution***2. boarder→boundaries***3. perchase→purchase***4. sonsiderably→considerably***替换建议：***1. definately→undoubtedly/certainly***2. payment→transaction/digital currency***3. improve→enhance/optimize***4. range→spectrum/diversity@@@D. 添加连接词'Furthermore/Moreover'***结论总结分论点'global accessibility and personal convenience'@@@In the internet era, the evolution of payment systems has undoubtedly enhanced transactional convenience while expanding commercial boundaries. I firmly believe this shift is positive as it creates unprecedented opportunities for both businesses and individuals.***While traditional cash limits transactions to local merchants, digital currency enables effortless global commerce. Consider multinational corporations in Asia requiring daily transfers of millions to European partners. Physical cash transportation would be impractical, but through secure platforms like VISA, such complex transactions conclude within seconds.@@@debug:True[1]***1: 调试标记不属于正式作文内容***建议删除该标记@@@1@@@5@@@[{\"text\":\"debug:True\",\"type\":\"wording\",\"problem\":\"调试标记不属于正式作文内容。\",\"suggestion\":\"正式提交前删除该标记。\"}]"
+                for part in extractedAiResponse.split('@@@'):
+                    for event in accept_text(part + '@@@'):
+                        yield event
+
+            if pending.strip():
+                fields.append(normalize_ai_field(len(fields), pending))
+                for event in completed_sections(fields, emitted_sections):
+                    yield event
+
+            annotation_json = '[]'
+            if len(fields) > 16:
+                annotation_json = fields[16]
+                fields = fields[:16]
+
+            if len(fields) < 16:
+                yield sse_event('error', {'message': 'AI response is incomplete. Please retry.'})
+                return
+
+            entryList = calculate_score(fields) + fields
+            report_path = generateReport(*entryList,toEvaluateAnswer,question_num, annotation_json=annotation_json)
+            print(entryList + [report_path, annotation_json])
+            yield sse_event('done', {'reportPath': report_path, 'annotationJson': annotation_json})
+        except Exception as e:
+            yield sse_event('error', {'message': str(e)})
+
+    return Response(stream_with_context(stream_response()), mimetype='text/event-stream')
 
     
 

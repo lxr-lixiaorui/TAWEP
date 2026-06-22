@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <title id='stamp'>Discussion Page stamp</title>
     <style>
         body {
@@ -50,6 +53,60 @@
             background-color: #add8e6;
             border-radius: 10px;
         }
+
+        .annotated-essay {
+            line-height: 2.1;
+            white-space: pre-wrap;
+        }
+
+        .essay-mark {
+            border-bottom: 1px dotted #9ca3af;
+            cursor: help;
+            position: relative;
+        }
+
+        .essay-mark::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 9999px;
+            position: absolute;
+            top: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 0 2px #ffffff;
+        }
+
+        .essay-mark.grammar::before {
+            background: #93c5fd;
+        }
+
+        .essay-mark.spelling::before {
+            background: #f9a8d4;
+        }
+
+        .essay-mark.wording::before {
+            background: #86efac;
+        }
+
+        .issue-card {
+            max-width: 280px;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .issue-card strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stream-section {
+            display: none;
+        }
+
+        .stream-section.ready {
+            display: block;
+        }
         
     </style>
 </head>
@@ -59,104 +116,16 @@
         <div class="flex justify-between items-center mb-6">
             <div></div>
             <script>
-                function sendbackresponse() {
+                async function sendbackresponse() {
                     const wordCountValue = document.getElementById('word-count-value');
                     console.log(wordCountValue.textContent)
                     if (Number(wordCountValue.textContent) > 20){
                     alert("AI is now evaluating, please wait for about 1 minute and ensure network connection!")
                     const submitBtn = document.getElementById('submitting')
                     const inputtext = document.getElementById('input-text').value;
-                    submitBtn.addEventListener('click', function() {
-                        this.disabled = true;
-                        console.log('按钮已禁用');
-                    })
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', '/submit_answer', true);
-                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    
-                    // analysis py json file
-                    xhr.responseType = 'json';  
+                    submitBtn.disabled = true;
+                    console.log('按钮已禁用');
 
-                    xhr.onload = function() {  
-                        if (xhr.status === 200) {
-                            // Stop progress and set to done
-                            clearInterval(progressInterval);
-                            document.getElementById('progress-bar').value = 100;
-                            document.getElementById('status').textContent = 'Done';
-                            const reportborder = document.getElementById("reportborder")
-                            //show and set report
-                            reportborder.removeAttribute("style")
-                            const receivedList = xhr.response;
-                            const srcThir = receivedList[0]
-                            const srcFive = receivedList[1]
-                            document.getElementById("src").innerHTML = srcFive+" / "+srcThir
-                            document.getElementById("org").innerHTML = inputtext
-                            const srcA = receivedList[2]
-                            document.getElementById("srcA").innerHTML = srcA
-                            const srcB = receivedList[3]
-                            document.getElementById("srcB").innerHTML = srcB
-                            const srcC = receivedList[4]
-                            document.getElementById("srcC").innerHTML = srcC
-                            const srcD = receivedList[5]
-                            document.getElementById("srcD").innerHTML = srcD
-                            const probA = receivedList[6]
-                            document.getElementById("probA").innerHTML = "-" +probA
-                            const probB = receivedList[7]
-                            document.getElementById("probB").innerHTML = "-" +probB
-                            const probC = receivedList[8]
-                            document.getElementById("probC").innerHTML = "-" +probC
-                            const probD = receivedList[9]
-                            document.getElementById("probD").innerHTML = "-" +probD
-                            const imprA = receivedList[10]
-                            document.getElementById("imprA").innerHTML = "-" +imprA
-                            const imprB = receivedList[11]
-                            document.getElementById("imprB").innerHTML = "-" +imprB
-                            const imprC = receivedList[12]
-                            document.getElementById("imprC").innerHTML = "-" +imprC
-                            const imprD= receivedList[13]
-                            document.getElementById("imprD").innerHTML = "-" +imprD
-                            const rewr = receivedList[14]
-                            document.getElementById("rewr").innerHTML = rewr
-                            const reportPath = receivedList[18]
-                            const analysis = receivedList[15]
-                            document.getElementById("analysis").innerHTML = analysis
-                            const latter = receivedList[16]
-                            document.getElementById("latter").innerHTML = latter
-                            // Spelling mistake coloring
-                            spelling = Number(latter)
-                            if (spelling <=2){
-                                document.getElementById("latter").style.color = "green"
-                            } else if (spelling >2 && spelling <=5){
-                                document.getElementById("latter").style.color = "orange"
-                            } else{
-                                document.getElementById("latter").style.color = "red"
-                            }
-                            const grammar = receivedList[17]
-                            document.getElementById("grammar").innerHTML = grammar
-                            // Grammar mistake coloring
-                            grammar = Number(grammar)
-                            if (grammar <=3){
-                                document.getElementById("grammar").style.color = "green"
-                            } else if (grammar >3 && grammar <=6){
-                                document.getElementById("grammar").style.color = "orange"
-                            } else{
-                                document.getElementById("grammar").style.color = "red"
-                            }
-                            const downloadLabal = document.getElementById('downloadReport')
-                            downloadLabal.href = reportPath
-                            console.log(reportPath)
-
-                        } else {
-                            console.error('Request failed:', xhr.status);
-                        }
-                    };
-                    
-                    xhr.onerror = function() {
-                        console.error('Network error');
-                    };
-                    // console.log(inputtext)
-                    // console.log(encodeURIComponent(inputtext))
-                    xhr.send(`answer=${encodeURIComponent(inputtext)}`);
                     // Start progress after sending
                     const progressContainer = document.getElementById('progress-container');
                     progressContainer.style.display = 'block';
@@ -166,6 +135,31 @@
                     timeInCurrentStatus = 0;
                     document.getElementById('progress-bar').value = 0;
                     startProgress();
+
+                    const reportborder = document.getElementById("reportborder")
+                    reportborder.removeAttribute("style")
+                    resetStreamingReport(inputtext)
+
+                    try {
+                        const response = await fetch('/submit_answer', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `answer=${encodeURIComponent(inputtext)}`
+                        });
+
+                        if (!response.ok || !response.body) {
+                            throw new Error(`Request failed: ${response.status}`);
+                        }
+
+                        await readEvaluationStream(response, inputtext);
+                    } catch (error) {
+                        clearInterval(progressInterval);
+                        document.getElementById('status').textContent = error.message;
+                        console.error('Network error:', error);
+                        submitBtn.disabled = false;
+                    }
                 } else{
                     alert("too less words, fail to submit!!")
                 }}
@@ -180,7 +174,7 @@
             //generate selector from 1-30
                 const selector = document.getElementById('numberSelector');
                 let optionsHTML = '';
-                for (let i = 1; i <= 86; i++) {
+                for (let i = 1; i <=96; i++) {
                     optionsHTML += `<option value="${i}">${i}</option>`;
                 }
                 selector.innerHTML = optionsHTML;
@@ -286,6 +280,7 @@
             <h1 style="font-size: 9px; color:rgb(156, 155, 155)" id="geninfo">GenerateTime: {{time}}             ·            Question: {{questionNum}}</h1>
             <br/>
             
+            <div id="scoreSection" class="stream-section">
             <h3 style="color:gray; font-size: 18px;">> Total Score(5/30): </h3>
             <h2  id="src" style='font-size:40px; color:green'>total score 5 / Total score 30</h2>
                         
@@ -318,20 +313,26 @@
             </style>
                         
             <br/>
+            </div>
 
+            <div id="languageSection" class="stream-section">
             <p style="font-size: 20px;">拼写错误数量：</p>
             <p style="font-size: 27px;" id="grammar">grammar</p>
             <p style="font-size: 20px;">语法错误数量：</p>
             <p style="font-size: 27px;" id="latter">latter</p>
+            </div>
 
 
+            <div id="problemSection" class="stream-section">
             <h3 style="color:gray; font-size: 18px;">> Problem Analysis</h3>
             <p  id="probA"> - Content Relevence: Problem A</p>
             <p id="probB"> - Perspectives Expansion: Problem B</p>
             <p id="probC"> - Linguistic Expression: Problem C</p>
             <p id="probD"> - Logical structure: Problem D</p>
             <br/>
+            </div>
 
+            <div id="improvementSection" class="stream-section">
             <h3 style="color:gray; font-size: 18px;">> Improvements</h3>
             <p id="imprA"> - Content Relevence: Impr A</p>
             <p id="imprB"> - Perspectives Expansion: Impr B</p>
@@ -339,20 +340,251 @@
             <p id="imprD"> - Logical structure: Impr D</p>
                         
             <br/>
+            </div>
 
+            <div id="rewriteSection" class="stream-section">
             <h3 style="color:gray; font-size: 18px;">> AI Rewrite</h3>
             <p id="rewr"> writ</p>
             <br/>
+            </div>
 
-            <h3 style="color:gray; font-size: 18px;">> Sentence-by-sentence linguistic analysis</h3>
-            <p id="analysis"> writ</p>
-            <br/>
+            <div id="analysisBlock" style="display: none;">
+                <h3 style="color:gray; font-size: 18px;">> Sentence-by-sentence linguistic analysis</h3>
+                <p id="analysis"> writ</p>
+                <br/>
+            </div>
 
+            <div id="essaySection" class="stream-section">
             <h3 style="color:gray; font-size: 18px;">> Your Answer</h3>
-            <p id="org"> writ</p>
+            <p id="org" class="annotated-essay"> writ</p>
+            </div>
             </div>
     </div>
     <script>
+        function resetStreamingReport(inputtext) {
+            document.querySelectorAll('.stream-section').forEach((section) => {
+                section.classList.remove('ready');
+            });
+            document.getElementById("src").innerHTML = "Generating..."
+            document.getElementById("srcA").innerHTML = "Generating..."
+            document.getElementById("srcB").innerHTML = "Generating..."
+            document.getElementById("srcC").innerHTML = "Generating..."
+            document.getElementById("srcD").innerHTML = "Generating..."
+            document.getElementById("probA").innerHTML = "- Generating..."
+            document.getElementById("probB").innerHTML = "- Generating..."
+            document.getElementById("probC").innerHTML = "- Generating..."
+            document.getElementById("probD").innerHTML = "- Generating..."
+            document.getElementById("imprA").innerHTML = "- Generating..."
+            document.getElementById("imprB").innerHTML = "- Generating..."
+            document.getElementById("imprC").innerHTML = "- Generating..."
+            document.getElementById("imprD").innerHTML = "- Generating..."
+            document.getElementById("rewr").innerHTML = "Generating..."
+            document.getElementById("analysis").innerHTML = ""
+            document.getElementById("latter").innerHTML = "Generating..."
+            document.getElementById("grammar").innerHTML = "Generating..."
+            document.getElementById("downloadReport").removeAttribute("href")
+            renderAnnotatedEssay(inputtext, '[]')
+        }
+
+        function showStreamSection(sectionId) {
+            document.getElementById(sectionId).classList.add('ready');
+        }
+
+        function setCountColor(elementId, value, mediumLimit) {
+            const element = document.getElementById(elementId);
+            const count = Number(value);
+            if (count <= 2) {
+                element.style.color = "green";
+            } else if (count <= mediumLimit) {
+                element.style.color = "orange";
+            } else {
+                element.style.color = "red";
+            }
+        }
+
+        function parseSseMessage(message) {
+            const lines = message.split('\n');
+            let eventName = 'message';
+            let data = '';
+            lines.forEach((line) => {
+                if (line.startsWith('event:')) {
+                    eventName = line.slice(6).trim();
+                } else if (line.startsWith('data:')) {
+                    data += line.slice(5).trim();
+                }
+            });
+            return { eventName, data: data ? JSON.parse(data) : {} };
+        }
+
+        function handleEvaluationEvent(eventName, data, inputtext) {
+            if (eventName === 'start') {
+                document.getElementById('status').textContent = data.message || 'AI is evaluating...';
+            } else if (eventName === 'scores') {
+                showStreamSection('scoreSection')
+                document.getElementById("src").innerHTML = data.srcFive+" / "+data.srcThir
+                document.getElementById("srcA").innerHTML = data.srcA
+                document.getElementById("srcB").innerHTML = data.srcB
+                document.getElementById("srcC").innerHTML = data.srcC
+                document.getElementById("srcD").innerHTML = data.srcD
+                document.getElementById('status').textContent = 'Scores ready';
+            } else if (eventName === 'problem') {
+                showStreamSection('problemSection')
+                document.getElementById("probA").innerHTML = "-" + data.probA
+                document.getElementById("probB").innerHTML = "-" + data.probB
+                document.getElementById("probC").innerHTML = "-" + data.probC
+                document.getElementById("probD").innerHTML = "-" + data.probD
+                document.getElementById('status').textContent = 'Problem analysis ready';
+            } else if (eventName === 'improvements') {
+                showStreamSection('improvementSection')
+                document.getElementById("imprA").innerHTML = "-" + data.imprA
+                document.getElementById("imprB").innerHTML = "-" + data.imprB
+                document.getElementById("imprC").innerHTML = "-" + data.imprC
+                document.getElementById("imprD").innerHTML = "-" + data.imprD
+                document.getElementById('status').textContent = 'Improvements ready';
+            } else if (eventName === 'rewrite') {
+                showStreamSection('rewriteSection')
+                document.getElementById("rewr").innerHTML = data.rewr
+                document.getElementById('status').textContent = 'AI rewrite ready';
+            } else if (eventName === 'analysis_counts') {
+                showStreamSection('languageSection')
+                document.getElementById("analysis").innerHTML = data.analysis
+                document.getElementById("latter").innerHTML = data.latter
+                document.getElementById("grammar").innerHTML = data.grammar
+                setCountColor("latter", data.latter, 5)
+                setCountColor("grammar", data.grammar, 6)
+                document.getElementById('status').textContent = 'Language checks ready';
+            } else if (eventName === 'essay') {
+                showStreamSection('essaySection')
+                renderAnnotatedEssay(inputtext, data.annotationJson || '[]')
+                document.getElementById('status').textContent = 'Essay annotations ready';
+            } else if (eventName === 'done') {
+                clearInterval(progressInterval);
+                document.getElementById('progress-bar').value = 100;
+                document.getElementById('status').textContent = 'Done';
+                document.getElementById('downloadReport').href = data.reportPath;
+                showStreamSection('essaySection')
+                renderAnnotatedEssay(inputtext, data.annotationJson || '[]')
+                document.getElementById('submitting').disabled = false;
+            } else if (eventName === 'error') {
+                clearInterval(progressInterval);
+                document.getElementById('status').textContent = data.message || 'Evaluation failed';
+                document.getElementById('submitting').disabled = false;
+            }
+        }
+
+        async function readEvaluationStream(response, inputtext) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+                const messages = buffer.split('\n\n');
+                buffer = messages.pop();
+
+                messages.forEach((message) => {
+                    if (!message.trim()) {
+                        return;
+                    }
+                    const { eventName, data } = parseSseMessage(message);
+                    handleEvaluationEvent(eventName, data, inputtext);
+                });
+            }
+
+            if (buffer.trim()) {
+                const { eventName, data } = parseSseMessage(buffer);
+                handleEvaluationEvent(eventName, data, inputtext);
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function parseAnnotations(annotationJson) {
+            try {
+                const annotations = typeof annotationJson === 'string' ? JSON.parse(annotationJson) : annotationJson;
+                return Array.isArray(annotations) ? annotations : [];
+            } catch (error) {
+                console.warn('Invalid essay annotation JSON:', error);
+                return [];
+            }
+        }
+
+        function issueTypeLabel(type) {
+            return {
+                grammar: '语法问题',
+                spelling: '词汇拼写问题',
+                wording: '用词不当问题'
+            }[type] || '问题';
+        }
+
+        function buildIssueCard(issue) {
+            return `<div class="issue-card">
+                <strong>${escapeHtml(issueTypeLabel(issue.type))}</strong>
+                <div>问题：${escapeHtml(issue.problem || '未提供')}</div>
+                <div>改进：${escapeHtml(issue.suggestion || '未提供')}</div>
+            </div>`;
+        }
+
+        function renderAnnotatedEssay(text, annotationJson) {
+            const container = document.getElementById('org');
+            const annotations = parseAnnotations(annotationJson)
+                .filter((item) => item && item.text && ['grammar', 'spelling', 'wording'].includes(item.type));
+
+            const ranges = [];
+            let cursor = 0;
+            annotations.forEach((item) => {
+                let start = text.indexOf(item.text, cursor);
+                if (start === -1) {
+                    start = text.indexOf(item.text);
+                }
+                if (start === -1) {
+                    return;
+                }
+                const end = start + item.text.length;
+                const overlaps = ranges.some((range) => start < range.end && end > range.start);
+                if (!overlaps) {
+                    ranges.push({ start, end, item });
+                    cursor = end;
+                }
+            });
+
+            ranges.sort((a, b) => a.start - b.start);
+
+            let html = '';
+            let position = 0;
+            ranges.forEach((range) => {
+                html += escapeHtml(text.slice(position, range.start));
+                html += `<span class="essay-mark ${range.item.type}" data-tippy-content="${escapeHtml(buildIssueCard(range.item))}">${escapeHtml(text.slice(range.start, range.end))}</span>`;
+                position = range.end;
+            });
+            html += escapeHtml(text.slice(position));
+
+            container.innerHTML = html || escapeHtml(text);
+
+            if (window.tippy) {
+                tippy('.essay-mark', {
+                    allowHTML: true,
+                    placement: 'top',
+                    interactive: true,
+                    maxWidth: 320,
+                    appendTo: document.body
+                });
+            }
+        }
+
         // Progress configuration
         const progressConfig = {"Requesting... (1/17)":4,"Request Recerived... (2/17)":1,"Extracting... (3/17)":4, "Reading... (4/17)":6, "Analyzing Content Relevence... (5/17)":10, "Analyzing Perspectives Expansion... (6/17)":10, "Analyzing Linguistic Expression... (7/17)":10, "Analyzing Logical structure... (8/17)":10, "Evaluating Content Relevence... (9/17)":5, "Evaluating Perspectives Expansion... (10/17)":5, "Evaluating Linguistic Expression... (11/17)":5, "Evaluating Logical structure... (12/17)":5, "Writing Problem Analysis... (13/17)":10, "Writing Improvements... (14/17)":10, "Generating AI Rewrite... (15/17)":15, "Generating Sentence-by-sentence linguistic analysis... (16/17)":25, "Formatting and Reviewing... (17/17)":40};
         let progressInterval;

@@ -1,0 +1,282 @@
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <title id='stamp'>Discussion Page 5, 1780303419.2076285</title>
+    <style>
+        .annotated-essay {
+            line-height: 2.1;
+            white-space: pre-wrap;
+        }
+        .essay-mark {
+            border-bottom: 1px dotted #9ca3af;
+            cursor: help;
+            position: relative;
+        }
+        .essay-mark::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 9999px;
+            position: absolute;
+            top: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 0 2px #ffffff;
+        }
+        .essay-mark.grammar::before {
+            background: #93c5fd;
+        }
+        .essay-mark.spelling::before {
+            background: #f9a8d4;
+        }
+        .essay-mark.wording::before {
+            background: #86efac;
+        }
+        .issue-card {
+            max-width: 280px;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+        .issue-card strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mx-auto bg-white rounded-lg shadow-lg p-6" id="reportborder">
+        <div >
+            <h1 style="font-size: 45px;">Deepseek Evaluation Report</h1>
+            <h1 style="font-size: 9px; color:rgb(156, 155, 155)" id="geninfo">GenerateTime: 2026-06-01 16:43:39             ·            Question: 5</h1>
+            <br/>
+            
+            <h3 style="color:gray; font-size: 18px;">> Total Score(5/30): </h3>
+            <h2  id="src" style='font-size:40px; color:green'>3.4 / 22</h2>
+                        
+            <br/>
+
+            <h3 style="color:gray; font-size: 18px;">> Breakdown</h3>
+            <div class="grid-container">
+            <div class="item" style="color:gray"><center>Criteria</center></div>
+            <div class="item" style="color:gray" ><center>Score</center></div>
+            <div class="item">Content Relevance</div>
+            <div class="item" id="srcA">4.0</div>
+            <div class="item">Perspectives Expansion</div>
+            <div class="item" id="srcB">3.5</div>
+            <div class="item">Linguistic Expression</div>
+            <div class="item" id="srcC">2.5</div>
+            <div class="item">Logical structure</div>
+            <div class="item" id="srcD">3.5</div>
+            </div>
+            
+
+            
+            <style>
+            .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 2px; 
+            }
+            .item {
+            padding: 10px;
+            background: #f0f0f0;
+            }
+            </style>
+                        
+            <br/>
+
+            <p style="font-size: 14px;">拼写错误数量：</p>
+            <p style="font-size: 17px; color: red" id="grammar">9</p>
+            <p style="font-size: 14px;">语法错误数量：</p>
+            <p style="font-size: 17px; color: orange" id="latter">7</p>
+
+
+            <h3 style="color:gray; font-size: 18px;">> Problem Analysis</h3>
+            <p  id="probA"> - Content Relevence: 内容紧扣题目，但论述不够深入，第一个理由‘增加乘客负担’缺乏具体细节，第二个理由‘不能解决污染’未充分展开，整体深度不足</p>
+            <p id="probB"> - Perspectives Expansion: 观点有基本展开，但缺乏例子或进一步解释，如‘suffer much’未说明如何受苦，‘swich to green transport’未论证为何不切换，字数偏少（约150词）</p>
+            <p id="probC"> - Linguistic Expression: 存在较多拼写和语法错误，词汇简单（如‘folks’、‘suffer much’），句式单一，语言质量影响表达效果</p>
+            <p id="probD"> - Logical structure: 逻辑结构完整（开头-两段-结尾），但段落间缺乏过渡词，第一和第二段衔接生硬，结尾总结略显突兀</p>
+            <br/>
+
+            <h3 style="color:gray; font-size: 18px;">> Improvements</h3>
+            <p id="imprA"> - Content Relevence: 增加具体情境或影响，如说明低收入人群依赖飞机出行的场景，以及政策可能造成的公平性问题，使论述更有深度</p>
+            <p id="imprB"> - Perspectives Expansion: 每个论点补充细节或假设性例子，例如：如果中产家庭需要紧急飞行，额外税会导致他们面临经济困境；富人可能继续选择飞机，而穷人被迫使用汽车，反而增加污染</p>
+            <p id="imprC"> - Linguistic Expression: 修改所有拼写和语法错误，推荐替换词：folks→people/individuals；suffer much→suffer greatly/face hardships；air plane→airplane/aircraft；clean transport→eco-friendly transport/environmental solutions；waste→misuse/squander；make→develop/create</p>
+            <p id="imprD"> - Logical structure: 增加逻辑连接词，如‘Furthermore’连接第一和第二段，‘Additionally’在第二段内，‘Therefore’引出结论，使结构更连贯</p>
+                        
+            <br/>
+
+            <h3 style="color:gray; font-size: 18px;">> AI Rewrite</h3>
+            <p id="rewr">I disagree with imposing an additional tax on airplanes. I stand with Claire. First, airlines would pass the tax cost to passengers. Plane tickets are already too expensive for many ordinary people. If prices rise, those who need to fly for work or family visits will suffer greatly. Lower-income individuals cannot always choose trains or buses for long trips; this tax only adds more pressure on them. Furthermore, this tax policy cannot effectively solve air pollution. Wealthy travelers can still afford expensive flights and will not switch to eco-friendly transport. Additionally, the tax revenue might be wasted by the government instead of being used for clean transportation projects. In short, an extra air tax is a bad plan. Governments should develop cleaner aviation fuels and cheaper high-speed trains instead.</p>
+
+            <div style="display: none;">
+            <h3 style="color:gray; font-size: 18px;">> Sentence-by-sentence linguistic analysis</h3>
+            <p id="analysis">第一句：I disagree with Doctor Achebe’s idea of addtional[1] air plane[2] tax, and I stand with Claire totally. 
+<br/>
+错误序号1: addtional拼写错误，应为additional
+<br/>
+错误序号2: air plane写法不当，应为airplane或airplane
+<br/>
+改正：I disagree with Doctor Achebe's idea of additional airplane tax, and I totally stand with Claire.
+<br/>
+第二句：First, airlines will pass all the tax cost to passangers[3]. 
+<br/>
+错误序号3: passangers拼写错误，应为passengers
+<br/>
+改正：First, airlines will pass all the tax costs to passengers.
+<br/>
+第三句：Plane tickits[4] are already too expensive for most normal people. 
+<br/>
+错误序号4: tickits拼写错误，应为tickets
+<br/>
+改正：Plane tickets are already too expensive for most normal people.
+<br/>
+第四句：If prices go higher, folks who need[5] fly for work or family visits will suffer much. 
+<br/>
+错误序号5: need后缺少to，应为need to fly
+<br/>
+改正：If prices go higher, folks who need to fly for work or family visits will suffer much.
+<br/>
+第五句：Poor people can’t choice[6] trains or buses for long-distance trips sometime[7],[8] this tax just put[9] more pressure on them. 
+<br/>
+错误序号6: choice词性错误，应为choose
+<br/>
+错误序号7: sometime拼写错误，应为sometimes
+<br/>
+错误序号8: 逗号连接两个独立句子，造成逗号黏连，应改为句号或分号
+<br/>
+错误序号9: put与主语this tax主谓不一致，应为puts
+<br/>
+改正：Poor people can't choose trains or buses for long-distance trips sometimes. This tax just puts more pressure on them.
+<br/>
+第六句：Second, this tax policy can’t solve air pollution well. 
+<br/>
+无错误
+<br/>
+第七句：Some rich travelers still[10] afford expensive flights,[11] they won’t swich[12] to green transport. 
+<br/>
+错误序号10: afford前缺少can，应为can still afford
+<br/>
+错误序号11: 逗号黏连，应改为分号或句号
+<br/>
+错误序号12: swich拼写错误，应为switch
+<br/>
+改正：Some rich travelers can still afford expensive flights; they won't switch to green transport.
+<br/>
+第八句：The tax money also might waste[13] by goverment[14],[15] not really use[16] on clean transport projects. 
+<br/>
+错误序号13: waste被动语态错误，应为be wasted
+<br/>
+错误序号14: goverment拼写错误，应为government
+<br/>
+错误序号15: 逗号黏连，应改为句号或分号
+<br/>
+错误序号16: not really use缺少be动词，应为not really used
+<br/>
+改正：The tax money might also be wasted by the government; it is not really used on clean transport projects.
+<br/>
+第九句：In short, extra air tax is a bad plan. 
+<br/>
+无错误
+<br/>
+第十句：Goverments[17] should make[18] new clean flight fuels and cheaper high-speed trains instead. 
+<br/>
+错误序号17: Goverments拼写错误，应为Governments
+<br/>
+错误序号18: make new clean flight fuels用词不当，搭配生硬，应为develop cleaner aviation fuels
+<br/>
+改正：Governments should develop cleaner aviation fuels and cheaper high-speed trains instead.
+<br/>
+</p>
+            </div>
+
+            <br/><br/>
+
+            <h3 style="color:gray; font-size: 18px;">> Your Answer</h3>
+            <p id="org" class="annotated-essay"></p>
+            </div>
+    </div>
+    <script>
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function issueTypeLabel(type) {
+            return {
+                grammar: '语法问题',
+                spelling: '词汇拼写问题',
+                wording: '用词不当问题'
+            }[type] || '问题';
+        }
+
+        function buildIssueCard(issue) {
+            return `<div class="issue-card">
+                <strong>${escapeHtml(issueTypeLabel(issue.type))}</strong>
+                <div>问题：${escapeHtml(issue.problem || '未提供')}</div>
+                <div>改进：${escapeHtml(issue.suggestion || '未提供')}</div>
+            </div>`;
+        }
+
+        function renderAnnotatedEssay(text, annotations) {
+            const container = document.getElementById('org');
+            const validAnnotations = Array.isArray(annotations)
+                ? annotations.filter((item) => item && item.text && ['grammar', 'spelling', 'wording'].includes(item.type))
+                : [];
+
+            const ranges = [];
+            let cursor = 0;
+            validAnnotations.forEach((item) => {
+                let start = text.indexOf(item.text, cursor);
+                if (start === -1) {
+                    start = text.indexOf(item.text);
+                }
+                if (start === -1) {
+                    return;
+                }
+                const end = start + item.text.length;
+                const overlaps = ranges.some((range) => start < range.end && end > range.start);
+                if (!overlaps) {
+                    ranges.push({ start, end, item });
+                    cursor = end;
+                }
+            });
+
+            ranges.sort((a, b) => a.start - b.start);
+            let html = '';
+            let position = 0;
+            ranges.forEach((range) => {
+                html += escapeHtml(text.slice(position, range.start));
+                html += `<span class="essay-mark ${range.item.type}" data-tippy-content="${escapeHtml(buildIssueCard(range.item))}">${escapeHtml(text.slice(range.start, range.end))}</span>`;
+                position = range.end;
+            });
+            html += escapeHtml(text.slice(position));
+            container.innerHTML = html || escapeHtml(text);
+
+            if (window.tippy) {
+                tippy('.essay-mark', {
+                    allowHTML: true,
+                    placement: 'top',
+                    interactive: true,
+                    maxWidth: 320,
+                    appendTo: document.body
+                });
+            }
+        }
+
+        renderAnnotatedEssay("I disagree with Doctor Achebe’s idea of addtional air plane tax, and I stand with Claire totally.\nFirst, airlines will pass all the tax cost to passangers. Plane tickits are already too expensive for most normal people. If prices go higher, folks who need fly for work or family visits will suffer much. Poor people can’t choice trains or buses for long-distance trips sometime, this tax just put more pressure on them.\nSecond, this tax policy can’t solve air pollution well. Some rich travelers still afford expensive flights, they won’t swich to green transport. The tax money also might waste by goverment, not really use on clean transport projects.\nIn short, extra air tax is a bad plan. Goverments should make new clean flight fuels and cheaper high-speed trains instead.", [{"text": "addtional", "type": "spelling", "problem": "拼写错误，应为additional", "suggestion": "additional"}, {"text": "air plane", "type": "wording", "problem": "写法不当，应连写为airplane", "suggestion": "airplane"}, {"text": "passangers", "type": "spelling", "problem": "拼写错误，应为passengers", "suggestion": "passengers"}, {"text": "tickits", "type": "spelling", "problem": "拼写错误，应为tickets", "suggestion": "tickets"}, {"text": "need fly", "type": "grammar", "problem": "非谓语错误，need后缺少to", "suggestion": "need to fly"}, {"text": "choice", "type": "grammar", "problem": "词性错误，应为动词choose", "suggestion": "choose"}, {"text": "sometime", "type": "spelling", "problem": "拼写错误，应为sometimes", "suggestion": "sometimes"}, {"text": "this tax just put", "type": "grammar", "problem": "主谓不一致，主语this tax为单数，谓语应用puts", "suggestion": "this tax just puts"}, {"text": "swich", "type": "spelling", "problem": "拼写错误，应为switch", "suggestion": "switch"}, {"text": "goverment", "type": "spelling", "problem": "拼写错误，应为government", "suggestion": "government"}, {"text": "not really use", "type": "grammar", "problem": "被动语态结构缺失，应为not really used", "suggestion": "not really used"}, {"text": "Goverments", "type": "spelling", "problem": "拼写错误，应为Governments", "suggestion": "Governments"}, {"text": "make new clean flight fuels", "type": "wording", "problem": "用词不当，搭配生硬，建议改为develop cleaner aviation fuels", "suggestion": "develop cleaner aviation fuels"}]);
+    </script>
+    </body>
+    </html>
