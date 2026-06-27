@@ -1,40 +1,115 @@
+﻿# TAWEP
 
-## Introduction
-**TADAIE** (TOEFL Academic Discussion AI Evaluation Project) 
-    is a developing project with a similar **writing page** and an accurate **AI evaluation system** ,which aids TOTFL test taker to utilize murtured AI comment to address existing problems and to improve his/her writing skills within **1 minute**.
+**TAWEP** (TOEFL Academic Writing Evaluation Project) is being rebuilt from the original Flask prototype into a platform-style TOEFL Academic Discussion writing evaluation website.
 
+The current structure is:
 
-## Get it running!
-This project is based on **python**, so please insure that python3 has been properly installed.
+- `backend/`: FastAPI REST API, SQLAlchemy models, service layer, Postgres schema
+- `frontend/`: Vue 3 + TypeScript + Naive UI + Pinia + vue-i18n SPA
+- `static/table/2023_AcaTalk.txt`: legacy official prompt bank used as the temporary question source
+- `static/table/2023_AcaTalk_Answer.txt`: legacy reference-answer data
+- `static/table/Record/`: historical generated HTML reports, kept as local artifacts
 
-**Installing Dependenties**
+The old Flask template runtime has been removed. `app.py` now starts the FastAPI app for compatibility with the previous entry command.
 
-- moudle: **openai**
-```cmd
-pip install openai
+## Requirements
+
+Backend:
+
+```powershell
+python -m pip install -r requirements.txt
 ```
-- moudle: **flask**
-``` cmd
-pip install flask
+
+Frontend:
+
+```powershell
+cd frontend
+npm install
 ```
 
-**Deepseek API_KEY issue**
-Since this project relies on **Deepseek**, so it's necessary to have a vaild **Deepseek API_KEY**, if you've already had one, set the value of system environment *OPENAI_API_KEY* as your own api_key. If you don't have one, go to **https://platform.deepseek.com/api_keys** to register one and set the system environment. 
+Postgres is expected locally on port `2345`. Default connection string:
 
-**Evaluating cost**
- **less than 0.01** Chinese yuan for *deepseek-chat*, **0.06 Chinese yuan** for *deepseek-reasoner(default option for a more accurate score)*
+```text
+postgresql+asyncpg://tawep:tawep@localhost:2345/tawep
+```
 
+Create `.env` from `.env.example` and set `OPENAI_API_KEY` to your Deepseek key when live evaluation is wired in.
 
-After these steps, run **app.py**, after a few seconds, enter the website in the message (typically http://127.0.0.1:5000). You'll see three sperate information frame and a writing frame.
+## Database
 
+Initialize the schema with your Postgres client:
 
-## Begin to use!
+```powershell
+psql -h localhost -p 2345 -U tawep -d tawep -f backend/db/schema.sql
+```
 
-- First, choose a proper paper in the top selector, after questions appear, click <p style="color:blue; border: 4px soild">'Confirm paper and Restart'</p> The timer will restart.
+The schema includes users, topics, questions, uploaded-question review, answer sessions, evaluation reports, grammar analysis, language metrics, credit wallets, credit ledger, inbox messages, legal documents, and admin audit logs.
 
-- Then, start composing your article, after finishing, click <p style="color:blue; border: 4px soild">'Submit'</p>You need to wait for about one minute(Maybe a process bar will be add later :) ), and the report will appear, click the word: *"Download Report · HTML Version"* to download the report(Maybe a PDF version will be available soon :) )
+## Run
 
-## key codes
-- If **debug:True** is in your response, then it'll return a fixed, pre-generated report, which is convenient to debug and add new features without consuming usage of your API.
+Backend:
 
-- If **AllowOvertime:True** is in your response, then even if time is over, it won't submit automatically. Submission only occur when the 'Submit' button is clicked.
+```powershell
+python app.py
+```
+
+or:
+
+```powershell
+uvicorn backend.main:app --host 0.0.0.0 --port 1145 --reload
+```
+
+Frontend:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+Open:
+
+```text
+http://127.0.0.1:5173
+```
+
+The Vite dev server proxies `/api` to `http://127.0.0.1:1145`.
+
+## Main Routes
+
+Frontend routes include:
+
+- `/`
+- `/dashboard`
+- `/questionbank`
+- `/createyourown`
+- `/{questionNo}/prepare`
+- `/{sessionId}/answerpage`
+- `/{sessionId}/report`
+- `/{sessionId}/grammaranalysis`
+- `/{sessionId}/download`
+- `/examplereport`
+- `/settings`
+- `/inbox`
+- `/agreements`
+- `/creditexplanation`
+- `/login`
+- `/manage`
+- `/manage/questionbank`
+- `/manage/reviewquestion`
+- `/manage/accounts`
+
+Backend API routes are under `/api/v1`.
+
+## Credit Rules
+
+- Initial account credit: `180`
+- Weekly rolling usage limit: `60`
+- One AI evaluation: `3` credits
+- If credit is insufficient, submit returns HTTP `402` with an `INSUFFICIENT_CREDIT` style error payload.
+
+## Development Notes
+
+- The current backend routes return demo data or legacy-file-derived data where database queries are not wired yet.
+- Do not commit API keys or user private data.
+- Keep `static/table/*.txt` content unchanged unless the task explicitly requires data edits.
+- Historical files under `static/table/Record/` are generated report artifacts, not source requirements.

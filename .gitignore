@@ -1,0 +1,26 @@
+# Local agent/editor state
+.codex/
+
+# Local Python environment and cache
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local environment values
+.env
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# Generated report artifacts
+static/table/Record/
+
+# Design scratch files
+design/
+
+# Local dev server logs
+backend-dev.log
+backend-dev.err.log
+frontend-dev.log
+frontend-dev.err.log
