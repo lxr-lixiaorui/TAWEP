@@ -20,7 +20,7 @@ function toggleLocale() {
   <div class="page-shell">
     <header class="site-header">
       <div class="brand-inline">
-        <router-link class="brand-title" to="/dashboard">TAWEP</router-link>
+        <router-link class="brand-title" to="/">TAWEP</router-link>
         <nav class="nav-links">
           <router-link to="/dashboard">Dashboard</router-link>
           <router-link to="/questionbank">Question Bank</router-link>
@@ -39,3 +39,5 @@ function toggleLocale() {
     </main>
   </div>
 </template>
+
+

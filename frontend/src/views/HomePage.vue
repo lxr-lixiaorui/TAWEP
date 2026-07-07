@@ -1,14 +1,32 @@
 ﻿<script setup lang="ts">
 import PublicHeader from '../components/PublicHeader.vue'
 
-const rows = [
-  ['Score Breakdown', true, true, true, false, false],
-  ['Problem Analysis', true, true, true, false, false],
-  ['Improvement Plan', true, true, true, true, false],
-  ['AI Rewrite', true, false, true, true, false],
-  ['Grammar Analysis', true, true, true, false, false],
-  ['Language Preference', false, true, true, true, false],
-  ['Topic Score Matrix', false, true, false, true, true]
+const stats = [
+  ['96', 'official Academic Discussion prompts'],
+  ['9', 'automatically classified topic groups'],
+  ['0', 'cost to start practicing'],
+  ['4', 'scored writing dimensions']
+]
+
+const reportMatrix = [
+  ['Score', '30-point total, 5-point rubric score, and four dimension scores.'],
+  ['Diagnosis', 'Content, expansion, language, logic, grammar, spelling, and wording issues.'],
+  ['Action Plan', 'Specific edits and priority guidance instead of generic comments.'],
+  ['Rewrite', 'A polished response that preserves the student position and improves execution.'],
+  ['Style Profile', 'Writing habits and academic style patterns; later releases will use this to personalize rewrites.'],
+  ['Progress View', 'Topic and dimension history for finding repeated weaknesses.']
+]
+
+const topics = [
+  'Education',
+  'Environment',
+  'Policy',
+  'Business',
+  'Technology',
+  'Consumer Behavior',
+  'Health',
+  'Culture',
+  'Lifelong Learning'
 ]
 </script>
 
@@ -19,11 +37,12 @@ const rows = [
       <section class="hero-layout">
         <div class="hero-copy container">
           <div>
-            <h1>Free TOEFL Academic Discussion practice with calibrated AI feedback</h1>
+            <p class="eyebrow">Free TOEFL Academic Discussion practice</p>
+            <h1>Practice every prompt, then get feedback you can actually use.</h1>
             <p>
-              TAWEP provides a free, topic-classified TOEFL Academic Discussion question bank,
-              AI evaluation aligned with academic writing rubrics, and detailed reports that turn
-              every submission into specific next steps.
+              TAWEP is built for repeat practice: a full question bank, automatic topic
+              classification, calibrated AI scoring, and reports that explain what to fix in the
+              next draft rather than only judging the last one.
             </p>
             <div class="hero-actions">
               <router-link to="/questionbank" class="btn primary">Start Free Practice</router-link>
@@ -32,33 +51,59 @@ const rows = [
           </div>
         </div>
 
-        <section class="matrix-section container">
-          <h2 class="section-title">Report capability matrix</h2>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Report Area</th>
-                <th class="center">AI Scoring</th>
-                <th class="center">Dimension<br />Breakdown</th>
-                <th class="center">Actionable<br />Advice</th>
-                <th class="center">Style<br />Modeling</th>
-                <th class="center">Topic<br />Analytics</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in rows" :key="String(row[0])">
-                <td>{{ row[0] }}</td>
-                <td v-for="index in 5" :key="index" class="center">
-                  <span :class="row[index] ? 'link-action' : 'muted'">{{ row[index] ? 'Yes' : '-' }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="feature-row">
-            <div class="feature-stat"><strong>Free to use</strong><span>Initial credits included</span></div>
-            <div class="feature-stat"><strong>Full topic bank</strong><span>100+ classified prompts</span></div>
-            <div class="feature-stat"><strong>Model-calibrated</strong><span>AI scoring now, math tuning later</span></div>
-            <div class="feature-stat"><strong>Actionable reports</strong><span>Rewrite, grammar, matrix, next steps</span></div>
+        <section class="intro-proof container">
+          <div v-for="item in stats" :key="item[1]" class="proof-stat">
+            <strong>{{ item[0] }}</strong>
+            <span>{{ item[1] }}</span>
+          </div>
+        </section>
+
+        <section class="intro-section container intro-split">
+          <div>
+            <p class="eyebrow">Question bank</p>
+            <h2 class="section-title">Every current prompt is free and sorted by topic.</h2>
+            <p class="section-copy">
+              The current legacy bank parses into 96 Academic Discussion questions. TAWEP groups
+              them into topic buckets automatically, so students can drill a weak area instead of
+              scrolling through a flat list.
+            </p>
+          </div>
+          <div class="topic-grid">
+            <span v-for="topic in topics" :key="topic">{{ topic }}</span>
+          </div>
+        </section>
+
+        <section class="intro-section container">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Report matrix</p>
+              <h2 class="section-title">One report, multiple layers of feedback.</h2>
+            </div>
+            <p class="section-copy compact">
+              The scoring model gives the first pass today. The roadmap is a larger language model
+              plus math-model calibration so scores and advice become more stable over time.
+            </p>
+          </div>
+          <div class="report-matrix">
+            <article v-for="item in reportMatrix" :key="item[0]" class="report-cell">
+              <strong>{{ item[0] }}</strong>
+              <p>{{ item[1] }}</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="intro-section container intro-split">
+          <div>
+            <p class="eyebrow">Actionable improvement</p>
+            <h2 class="section-title">Advice should change the next essay, not just label this one.</h2>
+          </div>
+          <div class="roadmap-panel">
+            <p>
+              TAWEP can already produce focused recommendations and an AI Rewrite. The next model
+              direction is personal style analysis: learn a student's academic writing patterns,
+              then make rewrites that sound like a stronger version of that same writer.
+            </p>
+            <router-link to="/questionbank" class="btn primary">Choose a Prompt</router-link>
           </div>
         </section>
       </section>

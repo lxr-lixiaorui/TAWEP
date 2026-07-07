@@ -19,17 +19,14 @@ onMounted(async () => { question.value = await apiGet(`/questions/${questionNo}`
 
 <template>
   <AppShell>
-    <div v-if="question">
-      <p class="muted">Question {{ question.question_no }}</p>
-      <h1 class="simple-title">{{ question.question_no }}. {{ question.summary }}</h1>
-      <div class="form-grid" style="margin: 24px 0">
-        <article v-for="msg in question.messages" :key="msg.sort_order" class="panel panel-pad">
-          <strong>{{ msg.speaker_name }}</strong><p class="muted">{{ msg.content }}</p>
-        </article>
-      </div>
-      <div class="hero-actions">
-        <button class="btn primary" @click="start('timed')">Timed 10-minute Simulation</button>
-        <button class="btn" @click="start('unlimited')">Untimed Practice</button>
+    <div v-if="question" class="prepare-layout">
+      <div class="prepare-card panel panel-pad">
+        <p class="eyebrow">Question {{ question.question_no }}</p>
+        <h1 class="simple-title">{{ question.summary }}</h1>
+        <div class="hero-actions">
+          <button class="btn primary" @click="start('timed')">Timed 10-minute Simulation</button>
+          <button class="btn" @click="start('unlimited')">Untimed Practice</button>
+        </div>
       </div>
     </div>
   </AppShell>
