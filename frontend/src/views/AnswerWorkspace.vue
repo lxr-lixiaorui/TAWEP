@@ -50,6 +50,21 @@ const reportRows = computed(() => {
     ['Logical structure', report.value.components.logical_structure, 'logical_structure']
   ]
 })
+const reportCards = computed(() => reportRows.value.map((row) => {
+  const key = String(row[2])
+  const score = Number(row[1])
+  return {
+    label: String(row[0]),
+    key,
+    score,
+    percent: Math.max(0, Math.min(100, (score / 5) * 100)),
+    problem: report.value?.problems?.[key] || '',
+    improvement: report.value?.improvements?.[key] || ''
+  }
+}))
+const reportScorePercent = computed(() => report.value ? Math.max(0, Math.min(100, (report.value.total_score / 5) * 100)) : 0)
+const strongestReportCard = computed(() => [...reportCards.value].sort((a, b) => b.score - a.score)[0])
+const focusReportCard = computed(() => [...reportCards.value].sort((a, b) => a.score - b.score)[0])
 const grammarIssueCount = computed(() => grammar.value.filter(item => item.issue_type === 'grammar').length)
 const answerForAnalysis = computed(() => submittedAnswer.value || answer.value || session.value?.answer_text || grammar.value.map(item => item.original_text).filter(Boolean).join(' '))
 const spellingIssueCount = computed(() => grammar.value.filter(item => item.issue_type === 'spelling').length)
@@ -303,43 +318,80 @@ watch(active, async (next) => {
       <button class="tab-btn" :class="{ active: active === 'download' }" @click="active = 'download'">Download</button>
     </nav>
 
-    <article v-if="active === 'report' && report" class="legacy-report panel panel-pad">
-      <p class="muted">Deepseek Evaluation Report</p>
-      <h1 class="legacy-title">TAWEP Evaluation Report</h1>
-      <p class="legacy-meta">Question: {{ session?.question_no }} · Session: {{ sessionId }}</p>
-
-      <h3>&gt; Total Score(5/30):</h3>
-      <div class="legacy-score">{{ report.total_score }} / {{ report.total_score_30 }}</div>
-
-      <h3>&gt; Breakdown</h3>
-      <div class="legacy-breakdown">
-        <div class="legacy-cell muted">Criteria</div>
-        <div class="legacy-cell muted">Score</div>
-        <template v-for="row in reportRows" :key="row[2]">
-          <div class="legacy-cell">{{ row[0] }}</div>
-          <div class="legacy-cell">{{ row[1] }}</div>
-        </template>
-      </div>
-
-      <div class="legacy-counts">
-        <div>
-          <p>Spelling mistakes count:</p>
-          <strong class="orange">{{ spellingIssueCount }}</strong>
+    <article v-if="active === 'report' && report" class="report-modern">
+      <header class="report-hero panel">
+        <div class="report-hero-copy">
+          <p class="eyebrow">Evaluation Report</p>
+          <h1>TAWEP Writing Report</h1>
+          <p>Question {{ session?.question_no }} · Session {{ sessionId }}</p>
         </div>
-        <div>
-          <p>Grammar mistakes count:</p>
-          <strong class="green">{{ grammarIssueCount }}</strong>
+        <div class="report-score-card" :style="{ '--score': `${reportScorePercent}%` }">
+          <div class="score-ring"><span>{{ report.total_score }}</span><small>/ 5</small></div>
+          <div>
+            <strong>{{ report.total_score_30 }} / 30</strong>
+            <span>Converted TOEFL-style score</span>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <h3>&gt; Problem Analysis</h3>
-      <p v-for="row in reportRows" :key="`problem-${row[2]}`">- {{ row[0] }}: {{ report.problems[row[2] as string] }}</p>
+      <section class="report-snapshot">
+        <div class="snapshot-card panel">
+          <span>Strongest Area</span>
+          <strong>{{ strongestReportCard?.label }}</strong>
+          <p>{{ strongestReportCard?.score }} / 5</p>
+        </div>
+        <div class="snapshot-card panel focus">
+          <span>Priority Focus</span>
+          <strong>{{ focusReportCard?.label }}</strong>
+          <p>{{ focusReportCard?.score }} / 5</p>
+        </div>
+        <div class="snapshot-card panel">
+          <span>Language Flags</span>
+          <strong>{{ grammarIssueCount + spellingIssueCount }}</strong>
+          <p>{{ grammarIssueCount }} grammar · {{ spellingIssueCount }} spelling</p>
+        </div>
+      </section>
 
-      <h3>&gt; Improvements</h3>
-      <p v-for="row in reportRows" :key="`improvement-${row[2]}`">- {{ row[0] }}: {{ report.improvements[row[2] as string] }}</p>
+      <section class="report-section">
+        <div class="section-head compact-head">
+          <div>
+            <p class="eyebrow">Breakdown</p>
+            <h2 class="section-title">Score by criteria</h2>
+          </div>
+        </div>
+        <div class="criteria-grid">
+          <article v-for="card in reportCards" :key="card.key" class="criteria-card panel">
+            <div class="criteria-card-head">
+              <h3>{{ card.label }}</h3>
+              <strong>{{ card.score }} / 5</strong>
+            </div>
+            <div class="score-track"><span :style="{ width: `${card.percent}%` }"></span></div>
+            <p>{{ card.problem }}</p>
+          </article>
+        </div>
+      </section>
 
-      <h3>&gt; AI Rewrite</h3>
-      <p>{{ report.ai_rewrite }}</p>
+      <section class="report-section action-grid">
+        <article v-for="card in reportCards" :key="`action-${card.key}`" class="action-card panel">
+          <div>
+            <span class="action-kicker">Problem</span>
+            <h3>{{ card.label }}</h3>
+            <p>{{ card.problem }}</p>
+          </div>
+          <div class="next-step-box">
+            <span class="action-kicker">Next Step</span>
+            <p>{{ card.improvement }}</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="report-rewrite panel">
+        <div>
+          <p class="eyebrow">AI Rewrite</p>
+          <h2>Model answer direction</h2>
+        </div>
+        <p>{{ report.ai_rewrite }}</p>
+      </section>
     </article>
 
     <article v-if="active === 'grammar'" class="legacy-report panel panel-pad">
@@ -367,5 +419,7 @@ watch(active, async (next) => {
     <section v-if="active === 'download'" class="panel panel-pad"><a :href="downloadUrl" target="_blank" class="btn primary">Download HTML Report</a></section>
   </AppShell>
 </template>
+
+
 
 
