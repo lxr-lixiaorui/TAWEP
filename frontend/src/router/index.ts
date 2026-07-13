@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -10,9 +10,10 @@ export const router = createRouter({
     { path: '/:questionNo(\\d+)/prepare', component: () => import('../views/PreparePage.vue') },
     { path: '/:sessionId/answerpage', component: () => import('../views/AnswerWorkspace.vue'), props: { activeTab: 'answer' } },
     { path: '/:sessionId/report', component: () => import('../views/AnswerWorkspace.vue'), props: { activeTab: 'report' } },
+    { path: '/:sessionId/rewrite', component: () => import('../views/AnswerWorkspace.vue'), props: { activeTab: 'rewrite' } },
     { path: '/:sessionId/grammaranalysis', component: () => import('../views/AnswerWorkspace.vue'), props: { activeTab: 'grammar' } },
     { path: '/:sessionId/download', component: () => import('../views/AnswerWorkspace.vue'), props: { activeTab: 'download' } },
-    { path: '/examplereport', component: () => import('../views/ExampleReportPage.vue') },
+    { path: '/examplereport', redirect: '/00000000-0000-4000-8000-000000000008/report' },
     { path: '/settings', component: () => import('../views/SettingsPage.vue') },
     { path: '/inbox', component: () => import('../views/InboxPage.vue') },
     { path: '/agreements', component: () => import('../views/LegalPage.vue'), props: { slug: 'agreements' } },

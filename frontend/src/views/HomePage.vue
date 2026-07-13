@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import PublicHeader from '../components/PublicHeader.vue'
 
 const stats = [
@@ -34,8 +34,8 @@ const topics = [
   <div class="page-shell">
     <PublicHeader />
     <main>
-      <section class="hero-layout">
-        <div class="hero-copy container">
+      <section class="hero-layout intro-fade-scope">
+        <div class="hero-copy container intro-fade intro-fade-1">
           <div>
             <p class="eyebrow">Free TOEFL Academic Discussion practice</p>
             <h1>Practice every prompt, then get feedback you can actually use.</h1>
@@ -51,14 +51,14 @@ const topics = [
           </div>
         </div>
 
-        <section class="intro-proof container">
+        <section class="intro-proof container intro-fade intro-fade-2">
           <div v-for="item in stats" :key="item[1]" class="proof-stat">
             <strong>{{ item[0] }}</strong>
             <span>{{ item[1] }}</span>
           </div>
         </section>
 
-        <section class="intro-section container intro-split">
+        <section class="intro-section container intro-split intro-fade intro-fade-3">
           <div>
             <p class="eyebrow">Question bank</p>
             <h2 class="section-title">Every current prompt is free and sorted by topic.</h2>
@@ -73,7 +73,7 @@ const topics = [
           </div>
         </section>
 
-        <section class="intro-section container">
+        <section class="intro-section container intro-fade intro-fade-4">
           <div class="section-head">
             <div>
               <p class="eyebrow">Report matrix</p>
@@ -92,7 +92,7 @@ const topics = [
           </div>
         </section>
 
-        <section class="intro-section container intro-split">
+        <section class="intro-section container intro-split intro-fade intro-fade-5">
           <div>
             <p class="eyebrow">Actionable improvement</p>
             <h2 class="section-title">Advice should change the next essay, not just label this one.</h2>
@@ -110,3 +110,4 @@ const topics = [
     </main>
   </div>
 </template>
+

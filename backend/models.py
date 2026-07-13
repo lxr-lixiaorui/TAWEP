@@ -95,6 +95,7 @@ class Question(Base):
     source: Mapped[QuestionSource] = mapped_column(Enum(QuestionSource), default=QuestionSource.official)
     creator_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     topic_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("topics.id"))
+    exam_type: Mapped[str] = mapped_column(String(32), default="classic")
     difficulty: Mapped[str] = mapped_column(String(20), default="medium")
     summary: Mapped[str] = mapped_column(String(240))
     status: Mapped[ReviewStatus] = mapped_column(Enum(ReviewStatus), default=ReviewStatus.accepted)
@@ -145,8 +146,34 @@ class AnswerSession(Base):
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+class EvaluationJob(Base):
+    __tablename__ = "evaluation_jobs"
+    __table_args__ = (UniqueConstraint("session_id", name="uq_evaluation_jobs_session_id"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("answer_sessions.id"))
+    status: Mapped[str] = mapped_column(String(32), default="queued")
+    stage: Mapped[str] = mapped_column(String(48), default="queued")
+    report_locale: Mapped[str] = mapped_column(String(16), default="en")
+    partial_result: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    attempt: Mapped[int] = mapped_column(Integer, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=3)
+    estimated_min_seconds: Mapped[int] = mapped_column(Integer, default=120)
+    estimated_max_seconds: Mapped[int] = mapped_column(Integer, default=210)
+    worker_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
 class EvaluationReport(Base):
     __tablename__ = "evaluation_reports"
+    __table_args__ = (UniqueConstraint("session_id", name="uq_evaluation_reports_session_id"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("answer_sessions.id"))
@@ -154,12 +181,14 @@ class EvaluationReport(Base):
     model_name: Mapped[str] = mapped_column(String(120))
     total_score: Mapped[float] = mapped_column(Numeric(4, 1))
     raw_response: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    rewrite_comparison: Mapped[dict] = mapped_column(JSONB(), default=dict)
     report_html_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 class ScoreComponent(Base):
     __tablename__ = "score_components"
+    __table_args__ = (UniqueConstraint("report_id", name="uq_score_components_report_id"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id"))
@@ -175,6 +204,9 @@ class GrammarAnalysisItem(Base):
     id: Mapped[uuid.UUID] = uuid_pk()
     report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id"))
     sentence_index: Mapped[int] = mapped_column(Integer)
+    occurrence_index: Mapped[int] = mapped_column(Integer, default=1)
+    start_offset: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    end_offset: Mapped[int | None] = mapped_column(Integer, nullable=True)
     original_text: Mapped[str] = mapped_column(Text())
     issue_type: Mapped[str] = mapped_column(String(40))
     explanation: Mapped[str] = mapped_column(Text())
@@ -183,6 +215,7 @@ class GrammarAnalysisItem(Base):
 
 class LanguageMetricScore(Base):
     __tablename__ = "language_metric_scores"
+    __table_args__ = (UniqueConstraint("report_id", "metric_key", name="uq_language_metric_report_key"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id"))
@@ -205,6 +238,7 @@ class CreditWallet(Base):
 
 class CreditLedger(Base):
     __tablename__ = "credit_ledger"
+    __table_args__ = (UniqueConstraint("session_id", "reason", name="uq_credit_ledger_session_reason"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))

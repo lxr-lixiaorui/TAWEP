@@ -1,4 +1,4 @@
-﻿CREATE EXTENSION IF NOT EXISTS citext;
+CREATE EXTENSION IF NOT EXISTS citext;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 DO $$
@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS questions (
     source questionsource NOT NULL DEFAULT 'official',
     creator_user_id uuid REFERENCES users(id),
     topic_id uuid NOT NULL REFERENCES topics(id),
+    exam_type varchar(32) NOT NULL DEFAULT 'classic',
     difficulty varchar(20) NOT NULL DEFAULT 'medium',
     summary varchar(240) NOT NULL,
     status reviewstatus NOT NULL DEFAULT 'accepted',
@@ -62,7 +63,11 @@ CREATE TABLE IF NOT EXISTS questions (
     CONSTRAINT uq_questions_question_no UNIQUE (question_no)
 );
 
+ALTER TABLE questions
+    ADD COLUMN IF NOT EXISTS exam_type varchar(32) NOT NULL DEFAULT 'classic';
+
 CREATE INDEX IF NOT EXISTS ix_questions_question_no ON questions (question_no);
+CREATE INDEX IF NOT EXISTS ix_questions_exam_type ON questions (exam_type);
 
 CREATE TABLE IF NOT EXISTS question_messages (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -95,6 +100,33 @@ CREATE TABLE IF NOT EXISTS answer_sessions (
     submitted_at timestamptz
 );
 
+CREATE TABLE IF NOT EXISTS evaluation_jobs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id uuid NOT NULL REFERENCES answer_sessions(id),
+    status varchar(32) NOT NULL DEFAULT 'queued',
+    stage varchar(48) NOT NULL DEFAULT 'queued',
+    report_locale varchar(16) NOT NULL DEFAULT 'en',
+    partial_result jsonb NOT NULL DEFAULT '{}'::jsonb,
+    attempt integer NOT NULL DEFAULT 0,
+    max_attempts integer NOT NULL DEFAULT 3,
+    estimated_min_seconds integer NOT NULL DEFAULT 120,
+    estimated_max_seconds integer NOT NULL DEFAULT 210,
+    worker_id varchar(120),
+    error_code varchar(80),
+    error_message text,
+    next_attempt_at timestamptz,
+    heartbeat_at timestamptz,
+    started_at timestamptz,
+    completed_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT uq_evaluation_jobs_session_id UNIQUE (session_id),
+    CONSTRAINT ck_evaluation_jobs_status CHECK (status IN ('queued', 'evaluating', 'retrying', 'completed', 'failed'))
+);
+
+CREATE INDEX IF NOT EXISTS ix_evaluation_jobs_claim
+    ON evaluation_jobs (status, next_attempt_at, created_at);
+
 CREATE TABLE IF NOT EXISTS evaluation_reports (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id uuid NOT NULL REFERENCES answer_sessions(id),
@@ -102,9 +134,14 @@ CREATE TABLE IF NOT EXISTS evaluation_reports (
     model_name varchar(120) NOT NULL,
     total_score numeric(4, 1) NOT NULL,
     raw_response jsonb NOT NULL DEFAULT '{}'::jsonb,
+    rewrite_comparison jsonb NOT NULL DEFAULT '{}'::jsonb,
     report_html_path varchar(500),
-    created_at timestamptz NOT NULL DEFAULT now()
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT uq_evaluation_reports_session_id UNIQUE (session_id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_evaluation_reports_session_id
+    ON evaluation_reports (session_id);
 
 CREATE TABLE IF NOT EXISTS score_components (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -112,13 +149,20 @@ CREATE TABLE IF NOT EXISTS score_components (
     content_relevance numeric(3, 1) NOT NULL,
     perspective_expansion numeric(3, 1) NOT NULL,
     linguistic_expression numeric(3, 1) NOT NULL,
-    logical_structure numeric(3, 1) NOT NULL
+    logical_structure numeric(3, 1) NOT NULL,
+    CONSTRAINT uq_score_components_report_id UNIQUE (report_id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_score_components_report_id
+    ON score_components (report_id);
 
 CREATE TABLE IF NOT EXISTS grammar_analysis_items (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     report_id uuid NOT NULL REFERENCES evaluation_reports(id),
     sentence_index integer NOT NULL,
+    occurrence_index integer NOT NULL DEFAULT 1,
+    start_offset integer,
+    end_offset integer,
     original_text text NOT NULL,
     issue_type varchar(40) NOT NULL,
     explanation text NOT NULL,
@@ -129,8 +173,12 @@ CREATE TABLE IF NOT EXISTS language_metric_scores (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     report_id uuid NOT NULL REFERENCES evaluation_reports(id),
     metric_key varchar(80) NOT NULL,
-    score numeric(3, 1) NOT NULL
+    score numeric(3, 1) NOT NULL,
+    CONSTRAINT uq_language_metric_report_key UNIQUE (report_id, metric_key)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_language_metric_report_key
+    ON language_metric_scores (report_id, metric_key);
 
 CREATE TABLE IF NOT EXISTS credit_wallets (
     user_id uuid PRIMARY KEY REFERENCES users(id),
@@ -148,8 +196,12 @@ CREATE TABLE IF NOT EXISTS credit_ledger (
     reason varchar(120) NOT NULL,
     session_id uuid REFERENCES answer_sessions(id),
     admin_id uuid REFERENCES users(id),
-    created_at timestamptz NOT NULL DEFAULT now()
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT uq_credit_ledger_session_reason UNIQUE (session_id, reason)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_credit_ledger_session_reason
+    ON credit_ledger (session_id, reason);
 
 CREATE TABLE IF NOT EXISTS inbox_messages (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

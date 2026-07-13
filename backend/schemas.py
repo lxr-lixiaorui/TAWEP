@@ -69,6 +69,7 @@ class QuestionOut(BaseModel):
     question_no: int
     source: str
     topic: str
+    exam_type: str = "classic"
     difficulty: str
     summary: str
     avg_score: float | None = None
@@ -97,6 +98,7 @@ class AnswerUpdate(BaseModel):
 
 class SubmitAnswer(BaseModel):
     answer_text: str
+    report_locale: str = Field(default="en", min_length=2, max_length=16, pattern="^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$")
 
 
 class SessionOut(BaseModel):
@@ -125,11 +127,34 @@ class ReportOut(BaseModel):
     problems: dict[str, str]
     improvements: dict[str, str]
     ai_rewrite: str
+    rewrite_comparison: dict = Field(default_factory=dict)
     report_html_url: str | None = None
+
+
+class EvaluationJobOut(BaseModel):
+    id: UUID
+    session_id: UUID
+    status: str
+    stage: str
+    report_locale: str
+    available_sections: list[str]
+    partial_report: dict
+    elapsed_seconds: int
+    estimated_min_seconds: int
+    estimated_max_seconds: int
+    attempt: int
+    max_attempts: int
+    error_code: str | None = None
+    error_message: str | None = None
+    created_at: datetime
+    completed_at: datetime | None = None
 
 
 class GrammarItemOut(BaseModel):
     sentence_index: int
+    occurrence_index: int = 1
+    start_offset: int | None = None
+    end_offset: int | None = None
     original_text: str
     issue_type: str
     explanation: str

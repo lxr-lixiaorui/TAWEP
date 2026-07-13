@@ -1,13 +1,17 @@
 ﻿<script setup lang="ts">
-import AppShell from '../components/AppShell.vue'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-const exampleReportUrl = '/static/table/Record/Discussion%20Page%208,%201780879540.1451404.html'
+const router = useRouter()
+const exampleSessionId = '00000000-0000-4000-8000-000000000008'
+
+onMounted(() => {
+  void router.replace(`/${exampleSessionId}/report`)
+})
 </script>
 
 <template>
-  <AppShell>
-    <section class="example-report-frame panel">
-      <iframe :src="exampleReportUrl" title="Discussion Page 8 Example Report"></iframe>
-    </section>
-  </AppShell>
+  <main class="redirect-page">
+    <p>Opening example report...</p>
+  </main>
 </template>

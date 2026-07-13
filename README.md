@@ -1,4 +1,4 @@
-﻿# TAWEP
+# TAWEP
 
 **TAWEP** (TOEFL Academic Writing Evaluation Project) is being rebuilt from the original Flask prototype into a platform-style TOEFL Academic Discussion writing evaluation website.
 
@@ -27,10 +27,10 @@ cd frontend
 npm install
 ```
 
-Postgres is expected locally on port `2345`. Default connection string:
+Postgres is expected locally on port `5432`. Default connection string:
 
 ```text
-postgresql+asyncpg://tawep:tawep@localhost:2345/tawep
+postgresql+asyncpg://tawep:tawep@localhost:5432/tawep
 ```
 
 Create `.env` from `.env.example` and set `OPENAI_API_KEY` to your Deepseek key when live evaluation is wired in.
@@ -40,7 +40,14 @@ Create `.env` from `.env.example` and set `OPENAI_API_KEY` to your Deepseek key 
 Initialize the schema with your Postgres client:
 
 ```powershell
-psql -h localhost -p 2345 -U tawep -d tawep -f backend/db/schema.sql
+psql -h localhost -p 5432 -U tawep -d tawep -f backend/db/schema.sql
+```
+
+For an existing development database, apply the AI Rewrite comparison column with:
+
+```powershell
+python -m backend.db.migrate_rewrite_comparison
+python -m backend.db.migrate_grammar_offsets
 ```
 
 The schema includes users, topics, questions, uploaded-question review, answer sessions, evaluation reports, grammar analysis, language metrics, credit wallets, credit ledger, inbox messages, legal documents, and admin audit logs.
@@ -85,6 +92,7 @@ Frontend routes include:
 - `/{questionNo}/prepare`
 - `/{sessionId}/answerpage`
 - `/{sessionId}/report`
+- `/{sessionId}/rewrite`
 - `/{sessionId}/grammaranalysis`
 - `/{sessionId}/download`
 - `/examplereport`

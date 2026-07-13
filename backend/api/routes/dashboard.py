@@ -1,23 +1,26 @@
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.api.deps import demo_usage, get_current_user
+from backend.api.deps import get_current_user
+from backend.db.session import get_db
 from backend.schemas import BreakdownPoint, DashboardSummary, MatrixRow, RecommendationOut
+from backend.services.practice import get_usage
 
 
 router = APIRouter()
 
 
 @router.get("/summary", response_model=DashboardSummary)
-async def summary() -> DashboardSummary:
+async def summary(db: AsyncSession = Depends(get_db)) -> DashboardSummary:
     user = get_current_user()
     return DashboardSummary(
         alias=user.alias,
         user_id=user.id,
         average_score=4.0,
         practice_count=18,
-        credit=demo_usage(),
+        credit=await get_usage(db),
     )
 
 

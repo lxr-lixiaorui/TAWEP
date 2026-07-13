@@ -1,10 +1,13 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.api.deps import demo_usage, get_current_user
+from backend.api.deps import get_current_user
+from backend.db.session import get_db
 from backend.schemas import APIMessage, InboxMessageOut, UsageSummary, UserPublic, UserUpdate
+from backend.services.practice import get_usage
 
 
 router = APIRouter()
@@ -22,8 +25,8 @@ async def update_me(payload: UserUpdate) -> UserPublic:
 
 
 @router.get("/me/usage", response_model=UsageSummary)
-async def read_usage() -> UsageSummary:
-    return demo_usage()
+async def read_usage(db: AsyncSession = Depends(get_db)) -> UsageSummary:
+    return await get_usage(db)
 
 
 @router.get("/me/inbox", response_model=list[InboxMessageOut])

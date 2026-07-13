@@ -19,8 +19,5 @@ static/table/Record/
 # Design scratch files
 design/
 
-# Local dev server logs
-backend-dev.log
-backend-dev.err.log
-frontend-dev.log
-frontend-dev.err.log
+# Local dev server and worker logs
+*.log

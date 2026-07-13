@@ -1,0 +1,482 @@
+[
+  {
+    "question_no": 1,
+    "summary": "Better purchasing strategy: advice from friends or online sources",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 2,
+    "summary": "Which government spending areas should be reduced first",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 3,
+    "summary": "Which field should adults prioritize for lifelong learning",
+    "topic": "Lifelong Learning"
+  },
+  {
+    "question_no": 4,
+    "summary": "Full-time advanced degree first or part-time study with job",
+    "topic": "Education"
+  },
+  {
+    "question_no": 5,
+    "summary": "Should government tax airplanes to fund green transport",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 6,
+    "summary": "Should government increase penalties on environmentally damaging companies",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 7,
+    "summary": "Most important compulsory high school course",
+    "topic": "Education"
+  },
+  {
+    "question_no": 8,
+    "summary": "Which offers more advantages: super stores or small stores",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 9,
+    "summary": "Should governments financially support artists",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 10,
+    "summary": "Most important action to maintain good health",
+    "topic": "Health"
+  },
+  {
+    "question_no": 11,
+    "summary": "Should local funding prioritize arts or recreation",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 12,
+    "summary": "Should governments fund space exploration",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 13,
+    "summary": "Should schools prioritize teacher salaries or technology",
+    "topic": "Education"
+  },
+  {
+    "question_no": 14,
+    "summary": "Is online shopping affecting society overall",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 15,
+    "summary": "Should schools change start time to 8:30 a.m",
+    "topic": "Education"
+  },
+  {
+    "question_no": 16,
+    "summary": "Should parents allow children to watch online videos",
+    "topic": "Education"
+  },
+  {
+    "question_no": 17,
+    "summary": "Is rapid technological progress positive or negative",
+    "topic": "Technology"
+  },
+  {
+    "question_no": 18,
+    "summary": "Better advertising strategy celebrity endorsements or ordinary people",
+    "topic": "Business"
+  },
+  {
+    "question_no": 19,
+    "summary": "Should higher fuel taxes combat air pollution",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 20,
+    "summary": "Is decreased cash usage due to online payments positive",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 21,
+    "summary": "Advantage or disadvantage of being an early adopter",
+    "topic": "Technology"
+  },
+  {
+    "question_no": 22,
+    "summary": "Would monthly outdoor classes benefit students aged 5-18",
+    "topic": "Education"
+  },
+  {
+    "question_no": 23,
+    "summary": "Should local funding support arts or recreation more",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 24,
+    "summary": "Better to pursue certifications instead of a traditional degree",
+    "topic": "Education"
+  },
+  {
+    "question_no": 25,
+    "summary": "What should be included in school curriculum",
+    "topic": "Education"
+  },
+  {
+    "question_no": 26,
+    "summary": "Should governments fund space exploration",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 27,
+    "summary": "Should all scientific discoveries be shared freely",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 28,
+    "summary": "Main reasons for choosing rural over urban living",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 29,
+    "summary": "Better strategy for purchasing decisions: friends or online",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 30,
+    "summary": "Advantage or disadvantage of being an early adopter",
+    "topic": "Technology"
+  },
+  {
+    "question_no": 31,
+    "summary": "Should government impose more penalties on companies for environmental damage",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 32,
+    "summary": "Are differences between people from different countries increasing or diminishing",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 33,
+    "summary": "Has excessive consumption become a serious problem",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 34,
+    "summary": "Which contributes more to health and happiness: small close group or large friend circle",
+    "topic": "Health"
+  },
+  {
+    "question_no": 35,
+    "summary": "Are to-do lists beneficial for learning and work",
+    "topic": "Education"
+  },
+  {
+    "question_no": 36,
+    "summary": "Should there be an environmental tax on air travel",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 37,
+    "summary": "Whether caring for a pet benefits children's development",
+    "topic": "Education"
+  },
+  {
+    "question_no": 38,
+    "summary": "Television versus books impact on individuals",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 39,
+    "summary": "Individual actions beyond waste management for environment",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 40,
+    "summary": "Factors for choosing local or international charity",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 41,
+    "summary": "Driver fee for driving during peak hours",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 42,
+    "summary": "Government strategy to attract people to rural areas",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 43,
+    "summary": "Factories versus individuals for environmental protection efforts",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 44,
+    "summary": "Government policies to promote electric vehicles for environment",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 45,
+    "summary": "Benefits of monthly outdoor classes for students aged 5-18",
+    "topic": "Education"
+  },
+  {
+    "question_no": 46,
+    "summary": "Government funding for young adults cultural engagement",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 47,
+    "summary": "Cities saving historic buildings versus replacing with modern",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 48,
+    "summary": "Whether many possessions decrease quality of life",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 49,
+    "summary": "Most important criterion for promotion",
+    "topic": "Business"
+  },
+  {
+    "question_no": 50,
+    "summary": "Government policies to promote electric vehicles",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 51,
+    "summary": "Should governments remove cyclist helmet regulations",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 52,
+    "summary": "Should governments fund space exploration",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 53,
+    "summary": "Should schools assign homework during long breaks",
+    "topic": "Education"
+  },
+  {
+    "question_no": 54,
+    "summary": "Best government strategy to attract people to rural areas",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 55,
+    "summary": "Better to grade on performance or also effort",
+    "topic": "Education"
+  },
+  {
+    "question_no": 56,
+    "summary": "Effective solution to a global environmental problem",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 57,
+    "summary": "Advantages or disadvantages of taking a gap year",
+    "topic": "Education"
+  },
+  {
+    "question_no": 58,
+    "summary": "Better use of urban space: green space or other purposes",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 59,
+    "summary": "Most important investment in employee training",
+    "topic": "Business"
+  },
+  {
+    "question_no": 60,
+    "summary": "Is it good for young children to play educational games",
+    "topic": "Education"
+  },
+  {
+    "question_no": 61,
+    "summary": "Will people have more leisure time and less work in 20 years?",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 62,
+    "summary": "Better proposal: expand public transport or support electric cars?",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 63,
+    "summary": "Should governments promote tourism to remote regions?",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 64,
+    "summary": "Most effective government solution to housing shortage?",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 65,
+    "summary": "Best way to evaluate teachers: test scores, peer review, or student feedback?",
+    "topic": "Education"
+  },
+  {
+    "question_no": 66,
+    "summary": "Are field trips important for education or classroom better?",
+    "topic": "Education"
+  },
+  {
+    "question_no": 67,
+    "summary": "Better for new graduate: large established company or small start-up?",
+    "topic": "Business"
+  },
+  {
+    "question_no": 68,
+    "summary": "Best way for company to retain employees?",
+    "topic": "Business"
+  },
+  {
+    "question_no": 69,
+    "summary": "Is journal writing a worthwhile learning activity?",
+    "topic": "Education"
+  },
+  {
+    "question_no": 70,
+    "summary": "Making class attendance optional in university?",
+    "topic": "Education"
+  },
+  {
+    "question_no": 71,
+    "summary": "Should parents urge teens to get part-time jobs?",
+    "topic": "Education"
+  },
+  {
+    "question_no": 72,
+    "summary": "Should younger employees mentor senior coworkers?",
+    "topic": "Business"
+  },
+  {
+    "question_no": 73,
+    "summary": "Better government support for displaced workers: cash or training",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 74,
+    "summary": "Mandatory periodic refresher courses for teachers",
+    "topic": "Education"
+  },
+  {
+    "question_no": 75,
+    "summary": "Is working together best way to strengthen family bonds",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 76,
+    "summary": "Will cinemas cease to exist due to streaming",
+    "topic": "Technology"
+  },
+  {
+    "question_no": 77,
+    "summary": "Most significant advantage of a museum for a city",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 78,
+    "summary": "More important for leadership: communication or technical skills",
+    "topic": "Business"
+  },
+  {
+    "question_no": 79,
+    "summary": "Should economic success avoid environmental damage",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 80,
+    "summary": "Should public transportation be free for all",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 81,
+    "summary": "Biggest mistake when buying tech products",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 82,
+    "summary": "Better to have few close friends or many friends",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 83,
+    "summary": "Better to have few close friends or many friends",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 84,
+    "summary": "Priority for large cities: expand roads or improve public transit",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 85,
+    "summary": "Should all scientific discoveries be shared freely without secrecy",
+    "topic": "Policy"
+  },
+  {
+    "question_no": 86,
+    "summary": "Should secondary teachers assign oral presentations",
+    "topic": "Education"
+  },
+  {
+    "question_no": 87,
+    "summary": "Is decreasing cash usage due to online payments positive or negative",
+    "topic": "Consumer Behavior"
+  },
+  {
+    "question_no": 88,
+    "summary": "Is watching a lot of online videos harmful to children",
+    "topic": "Health"
+  },
+  {
+    "question_no": 89,
+    "summary": "Should people pursue traditional degrees or certification programs",
+    "topic": "Lifelong Learning"
+  },
+  {
+    "question_no": 90,
+    "summary": "Do social media influencers have a positive or negative effect",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 91,
+    "summary": "Are differences between people from different countries increasing or diminishing",
+    "topic": "Culture"
+  },
+  {
+    "question_no": 92,
+    "summary": "What government policy encourages electric vehicle use",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 93,
+    "summary": "Should more cities make central zones car-free",
+    "topic": "Environment"
+  },
+  {
+    "question_no": 94,
+    "summary": "Should schools spend more on teachers' salaries or resources",
+    "topic": "Education"
+  },
+  {
+    "question_no": 95,
+    "summary": "Should schools offer outdoor classes once a month",
+    "topic": "Education"
+  },
+  {
+    "question_no": 96,
+    "summary": "Key employer factor for remote-work location picks",
+    "topic": "Business"
+  }
+]

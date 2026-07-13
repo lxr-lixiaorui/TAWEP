@@ -1,6 +1,11 @@
 from pathlib import Path
 from re import sub
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload, selectinload
+
+from backend.models import Question, Topic
 from backend.schemas import QuestionMessageOut, QuestionOut
 
 
@@ -16,6 +21,10 @@ TOPICS = [
     "Lifelong Learning",
 ]
 
+EXAM_TYPES = {
+    "classic": "Classic",
+    "reform_2026": "26 Reform",
+}
 
 def _clean_lines(path: Path) -> list[str]:
     if not path.exists():
@@ -70,6 +79,7 @@ def load_legacy_questions(path: str = "static/table/2023_AcaTalk.txt") -> list[Q
                 question_no=question_no,
                 source="official",
                 topic=topic,
+                exam_type="classic",
                 difficulty=["easy", "medium", "hard"][question_no % 3],
                 summary=_summary_from_prompt(professor_content),
                 avg_score=round(3.2 + (question_no % 14) / 10, 1),
@@ -84,6 +94,7 @@ def filter_questions(
     difficulty: str | None = None,
     source: str | None = None,
     topic: str | None = None,
+    exam_type: str | None = None,
 ) -> list[QuestionOut]:
     questions = load_legacy_questions()
     if difficulty:
@@ -92,8 +103,67 @@ def filter_questions(
         questions = [item for item in questions if item.source == source]
     if topic:
         questions = [item for item in questions if item.topic == topic]
+    if exam_type:
+        questions = [item for item in questions if item.exam_type == exam_type]
     return questions
 
 
 def get_question_by_no(question_no: int) -> QuestionOut | None:
     return next((item for item in load_legacy_questions() if item.question_no == question_no), None)
+
+def _question_out(question: Question) -> QuestionOut:
+    return QuestionOut(
+        id=question.id,
+        question_no=question.question_no,
+        source=question.source.value,
+        topic=question.topic.name_en,
+        exam_type=question.exam_type,
+        difficulty=question.difficulty,
+        summary=question.summary,
+        avg_score=float(question.avg_score) if question.avg_score is not None else None,
+        word_count=question.word_count,
+        messages=[
+            QuestionMessageOut(
+                speaker_role=message.speaker_role,
+                speaker_name=message.speaker_name,
+                content=message.content,
+                sort_order=message.sort_order,
+            )
+            for message in sorted(question.messages, key=lambda item: item.sort_order)
+        ],
+    )
+
+
+def _question_statement():
+    return select(Question).options(joinedload(Question.topic), selectinload(Question.messages))
+
+
+async def filter_database_questions(
+    session: AsyncSession,
+    difficulty: str | None = None,
+    source: str | None = None,
+    topic: str | None = None,
+    exam_type: str | None = None,
+) -> list[QuestionOut]:
+    statement = _question_statement().order_by(Question.question_no)
+    if difficulty:
+        statement = statement.where(Question.difficulty == difficulty)
+    if source:
+        statement = statement.where(Question.source == source)
+    if topic:
+        statement = statement.join(Topic).where(Topic.name_en == topic)
+    if exam_type:
+        statement = statement.where(Question.exam_type == exam_type)
+    questions = (await session.scalars(statement)).all()
+    return [_question_out(question) for question in questions]
+
+
+async def get_database_question_by_no(session: AsyncSession, question_no: int) -> QuestionOut | None:
+    statement = _question_statement().where(Question.question_no == question_no)
+    question = await session.scalar(statement)
+    return _question_out(question) if question is not None else None
+
+
+async def list_database_topics(session: AsyncSession) -> list[str]:
+    statement = select(Topic.name_en).order_by(Topic.sort_order, Topic.name_en)
+    return list((await session.scalars(statement)).all())
