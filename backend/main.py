@@ -7,6 +7,7 @@ from backend.core.config import get_settings
 
 
 settings = get_settings()
+settings.validate_security()
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 app.add_middleware(

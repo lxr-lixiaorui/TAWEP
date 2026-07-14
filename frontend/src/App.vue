@@ -2,8 +2,10 @@
 import { computed, onMounted } from 'vue'
 import { darkTheme, type GlobalThemeOverrides } from 'naive-ui'
 import { useAppStore } from './stores/app'
+import { useAuthStore } from './stores/auth'
 
 const app = useAppStore()
+const auth = useAuthStore()
 const theme = computed(() => (app.theme === 'dark' ? darkTheme : null))
 const themeOverrides: GlobalThemeOverrides = {
   common: {
@@ -15,7 +17,10 @@ const themeOverrides: GlobalThemeOverrides = {
   }
 }
 
-onMounted(() => app.applyTheme())
+onMounted(() => {
+  app.applyTheme()
+  void auth.initialize()
+})
 </script>
 
 <template>

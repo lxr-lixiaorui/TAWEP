@@ -13,6 +13,7 @@ from backend.models import (
     EvaluationReport,
     GrammarAnalysisItem,
     Question,
+    ReviewStatus,
     ScoreComponent,
     SessionMode,
     SessionStatus,
@@ -88,14 +89,30 @@ def _usage_out(wallet: CreditWallet) -> UsageSummary:
     )
 
 
-async def get_usage(db: AsyncSession) -> UsageSummary:
+async def ensure_user_wallet(db: AsyncSession, user_id: UUID) -> None:
+    settings = get_settings()
+    await db.execute(
+        insert(CreditWallet)
+        .values(
+            user_id=user_id,
+            balance=settings.initial_credit,
+            weekly_limit=settings.weekly_credit_limit,
+            weekly_used=0,
+            weekly_window_start=_now(),
+            total_planned_credit=settings.initial_credit,
+        )
+        .on_conflict_do_nothing(index_elements=[CreditWallet.user_id])
+    )
+
+
+async def get_usage(db: AsyncSession, user_id: UUID) -> UsageSummary:
     async with db.begin():
-        await ensure_demo_account(db)
+        await ensure_user_wallet(db, user_id)
         wallet = await db.scalar(
-            select(CreditWallet).where(CreditWallet.user_id == DEMO_USER_ID).with_for_update()
+            select(CreditWallet).where(CreditWallet.user_id == user_id).with_for_update()
         )
         if wallet is None:
-            raise RuntimeError("Demo credit wallet could not be created")
+            raise RuntimeError("Credit wallet could not be created")
         _reset_weekly_window(wallet)
         return _usage_out(wallet)
 
@@ -113,22 +130,27 @@ def _session_out(session: AnswerSession, question_no: int) -> SessionOut:
     )
 
 
-def _session_statement(session_id: UUID):
+def _session_statement(session_id: UUID, user_id: UUID):
     return (
         select(AnswerSession, Question.question_no)
         .join(Question, Question.id == AnswerSession.question_id)
-        .where(AnswerSession.id == session_id, AnswerSession.user_id == DEMO_USER_ID)
+        .where(AnswerSession.id == session_id, AnswerSession.user_id == user_id)
     )
 
 
-async def create_session(db: AsyncSession, question_no: int, mode: str) -> SessionOut | None:
+async def create_session(db: AsyncSession, user_id: UUID, question_no: int, mode: str) -> SessionOut | None:
     async with db.begin():
-        await ensure_demo_account(db)
-        question = await db.scalar(select(Question).where(Question.question_no == question_no))
+        await ensure_user_wallet(db, user_id)
+        question = await db.scalar(
+            select(Question).where(
+                Question.question_no == question_no,
+                Question.status == ReviewStatus.accepted,
+            )
+        )
         if question is None:
             return None
         session = AnswerSession(
-            user_id=DEMO_USER_ID,
+            user_id=user_id,
             question_id=question.id,
             mode=SessionMode(mode),
             status=SessionStatus.in_progress,
@@ -142,14 +164,14 @@ async def create_session(db: AsyncSession, question_no: int, mode: str) -> Sessi
         return _session_out(session, question.question_no)
 
 
-async def get_session(db: AsyncSession, session_id: UUID) -> SessionOut | None:
-    row = (await db.execute(_session_statement(session_id))).one_or_none()
+async def get_session(db: AsyncSession, user_id: UUID, session_id: UUID) -> SessionOut | None:
+    row = (await db.execute(_session_statement(session_id, user_id))).one_or_none()
     return _session_out(row[0], row[1]) if row is not None else None
 
 
-async def update_answer(db: AsyncSession, session_id: UUID, answer_text: str) -> SessionOut | None:
+async def update_answer(db: AsyncSession, user_id: UUID, session_id: UUID, answer_text: str) -> SessionOut | None:
     async with db.begin():
-        row = (await db.execute(_session_statement(session_id).with_for_update())).one_or_none()
+        row = (await db.execute(_session_statement(session_id, user_id).with_for_update())).one_or_none()
         if row is None:
             return None
         session, question_no = row
@@ -162,7 +184,7 @@ async def update_answer(db: AsyncSession, session_id: UUID, answer_text: str) ->
         return _session_out(session, question_no)
 
 
-async def _report_out(db: AsyncSession, report: EvaluationReport) -> ReportOut:
+async def build_report_out(db: AsyncSession, report: EvaluationReport) -> ReportOut:
     component = await db.scalar(select(ScoreComponent).where(ScoreComponent.report_id == report.id))
     if component is None:
         raise RuntimeError(f"Report {report.id} is missing score components")
@@ -186,20 +208,20 @@ async def _report_out(db: AsyncSession, report: EvaluationReport) -> ReportOut:
     )
 
 
-async def get_report(db: AsyncSession, session_id: UUID) -> ReportOut | None:
+async def get_report(db: AsyncSession, user_id: UUID, session_id: UUID) -> ReportOut | None:
     report = await db.scalar(
         select(EvaluationReport)
         .join(AnswerSession, AnswerSession.id == EvaluationReport.session_id)
-        .where(EvaluationReport.session_id == session_id, AnswerSession.user_id == DEMO_USER_ID)
+        .where(EvaluationReport.session_id == session_id, AnswerSession.user_id == user_id)
     )
-    return await _report_out(db, report) if report is not None else None
+    return await build_report_out(db, report) if report is not None else None
 
 
-async def get_grammar(db: AsyncSession, session_id: UUID) -> list[GrammarItemOut] | None:
+async def get_grammar(db: AsyncSession, user_id: UUID, session_id: UUID) -> list[GrammarItemOut] | None:
     report_id = await db.scalar(
         select(EvaluationReport.id)
         .join(AnswerSession, AnswerSession.id == EvaluationReport.session_id)
-        .where(EvaluationReport.session_id == session_id, AnswerSession.user_id == DEMO_USER_ID)
+        .where(EvaluationReport.session_id == session_id, AnswerSession.user_id == user_id)
     )
     if report_id is None:
         return None

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -16,24 +17,42 @@ class UserPublic(BaseModel):
     status: str
     preferred_locale: str
     theme: str
+    email_verified_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class LoginRequest(BaseModel):
-    identifier: str
-    password: str
+    identifier: str = Field(min_length=3, max_length=320)
+    password: str = Field(min_length=1, max_length=128)
     captcha_token: str | None = None
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    alias: str
+    alias: str = Field(min_length=1, max_length=80)
+    password: str = Field(min_length=10, max_length=128)
+    preferred_locale: str = Field(default="en", pattern="^(en|zh)$")
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+    preferred_locale: str = Field(default="en", pattern="^(en|zh)$")
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=256)
+
+
+class PasswordResetRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=256)
+    password: str = Field(min_length=10, max_length=128)
 
 
 class AuthResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    expires_in: int
     user: UserPublic
 
 
@@ -74,18 +93,26 @@ class QuestionOut(BaseModel):
     summary: str
     avg_score: float | None = None
     word_count: int
-    messages: list[QuestionMessageOut] = []
+    messages: list[QuestionMessageOut] = Field(default_factory=list)
 
 
 class QuestionCreate(BaseModel):
-    topic: str
-    difficulty: str = "medium"
-    student_a_name: str
-    student_a_content: str
-    student_b_name: str
-    student_b_content: str
-    professor_name: str
-    professor_content: str
+    topic: str = Field(min_length=1, max_length=120)
+    exam_type: str = Field(default="classic", pattern="^(classic|reform_2026)$")
+    difficulty: str = Field(default="medium", pattern="^(easy|medium|hard)$")
+    student_a_name: str = Field(min_length=1, max_length=120)
+    student_a_content: str = Field(min_length=10, max_length=5000)
+    student_b_name: str = Field(min_length=1, max_length=120)
+    student_b_content: str = Field(min_length=10, max_length=5000)
+    professor_name: str = Field(min_length=1, max_length=120)
+    professor_content: str = Field(min_length=20, max_length=5000)
+
+
+class QuestionSubmissionOut(BaseModel):
+    id: UUID
+    question_no: int
+    status: str
+    message: str
 
 
 class SessionCreate(BaseModel):
@@ -129,6 +156,18 @@ class ReportOut(BaseModel):
     ai_rewrite: str
     rewrite_comparison: dict = Field(default_factory=dict)
     report_html_url: str | None = None
+
+
+class ReportFeedbackCreate(BaseModel):
+    feedback_type: str = Field(pattern="^(too_high|too_low|other)$")
+    comment: str | None = Field(default=None, max_length=4000)
+    consent_to_share: Literal[True]
+
+
+class ReportFeedbackStatusOut(BaseModel):
+    submitted: bool
+    feedback_type: str | None = None
+    created_at: datetime | None = None
 
 
 class EvaluationJobOut(BaseModel):
@@ -208,3 +247,101 @@ class AdminAccountAction(BaseModel):
 class AdminMessageCreate(BaseModel):
     title: str
     body: str
+
+
+class AdminUserCreate(BaseModel):
+    email: EmailStr
+    alias: str = Field(min_length=1, max_length=80)
+    password: str = Field(min_length=10, max_length=128)
+    role: str = Field(default="user", pattern="^(user|admin)$")
+    preferred_locale: str = Field(default="en", pattern="^(en|zh)$")
+
+
+class AdminAccountDelete(BaseModel):
+    confirm_email: EmailStr
+
+
+class AdminCreditAdjustment(BaseModel):
+    delta: int = Field(ge=-100000, le=100000)
+    reason: str = Field(min_length=3, max_length=120)
+
+
+class AdminAccountOut(BaseModel):
+    id: UUID
+    email: EmailStr
+    alias: str
+    role: str
+    status: str
+    credit: int
+    email_verified_at: datetime | None
+    created_at: datetime
+
+
+class AdminReviewDecision(BaseModel):
+    comment: str | None = Field(default=None, max_length=2000)
+
+
+class AdminQuestionCreate(QuestionCreate):
+    summary: str = Field(min_length=3, max_length=240)
+    status: str = Field(default="accepted", pattern="^(accepted|rejected)$")
+
+
+class AdminQuestionUpdate(BaseModel):
+    topic: str | None = Field(default=None, min_length=1, max_length=120)
+    exam_type: str | None = Field(default=None, pattern="^(classic|reform_2026)$")
+    difficulty: str | None = Field(default=None, pattern="^(easy|medium|hard)$")
+    summary: str | None = Field(default=None, min_length=3, max_length=240)
+    status: str | None = Field(default=None, pattern="^(pending|accepted|rejected)$")
+    student_a_name: str | None = Field(default=None, min_length=1, max_length=120)
+    student_a_content: str | None = Field(default=None, min_length=10, max_length=5000)
+    student_b_name: str | None = Field(default=None, min_length=1, max_length=120)
+    student_b_content: str | None = Field(default=None, min_length=10, max_length=5000)
+    professor_name: str | None = Field(default=None, min_length=1, max_length=120)
+    professor_content: str | None = Field(default=None, min_length=20, max_length=5000)
+    review_comment: str | None = Field(default=None, max_length=2000)
+
+
+class AdminQuestionOut(BaseModel):
+    id: UUID
+    question_no: int
+    source: str
+    status: str
+    topic: str
+    topic_key: str
+    exam_type: str
+    difficulty: str
+    summary: str
+    avg_score: float | None
+    word_count: int
+    creator_id: UUID | None = None
+    creator_alias: str | None = None
+    creator_email: EmailStr | None = None
+    session_count: int = 0
+    messages: list[QuestionMessageOut] = Field(default_factory=list)
+    created_at: datetime
+
+
+class AdminQuestionReviewOut(BaseModel):
+    review_id: UUID
+    question: AdminQuestionOut
+    reviewer_id: UUID | None = None
+    reviewer_alias: str | None = None
+    status: str
+    comment: str | None = None
+    reviewed_at: datetime | None = None
+
+
+class AdminReportFeedbackOut(BaseModel):
+    id: UUID
+    session_id: UUID
+    question_no: int
+    user_id: UUID
+    user_alias: str
+    user_email: EmailStr
+    feedback_type: str
+    comment: str | None = None
+    consent_to_share: bool
+    answer_snapshot: str
+    report_snapshot: dict
+    total_score: float
+    created_at: datetime

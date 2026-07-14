@@ -68,12 +68,59 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     alias: Mapped[str] = mapped_column(String(80))
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.user)
-    status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.active)
+    status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.pending)
     preferred_locale: Mapped[str] = mapped_column(String(8), default="en")
     theme: Mapped[str] = mapped_column(String(16), default="light")
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    token_version: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
-    wallet: Mapped["CreditWallet"] = relationship(back_populates="user", uselist=False)
+    wallet: Mapped["CreditWallet"] = relationship(back_populates="user", uselist=False, passive_deletes=True)
+
+
+class AuthSession(Base):
+    __tablename__ = "auth_sessions"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    refresh_token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    user_agent: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    ip_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class AccountToken(Base):
+    __tablename__ = "account_tokens"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    purpose: Mapped[str] = mapped_column(String(32), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class EmailOutbox(Base):
+    __tablename__ = "email_outbox"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    recipient_email: Mapped[str] = mapped_column(CITEXT())
+    template_key: Mapped[str] = mapped_column(String(64), index=True)
+    locale: Mapped[str] = mapped_column(String(8), default="en")
+    subject: Mapped[str] = mapped_column(String(200))
+    payload: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    status: Mapped[str] = mapped_column(String(24), default="pending", index=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    error_message: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 class Topic(Base):
@@ -93,7 +140,7 @@ class Question(Base):
     id: Mapped[uuid.UUID] = uuid_pk()
     question_no: Mapped[int] = mapped_column(Integer, index=True)
     source: Mapped[QuestionSource] = mapped_column(Enum(QuestionSource), default=QuestionSource.official)
-    creator_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    creator_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     topic_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("topics.id"))
     exam_type: Mapped[str] = mapped_column(String(32), default="classic")
     difficulty: Mapped[str] = mapped_column(String(20), default="medium")
@@ -111,7 +158,7 @@ class QuestionMessage(Base):
     __tablename__ = "question_messages"
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("questions.id"))
+    question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"))
     speaker_role: Mapped[str] = mapped_column(String(40))
     speaker_name: Mapped[str] = mapped_column(String(120))
     content: Mapped[str] = mapped_column(Text())
@@ -122,10 +169,11 @@ class QuestionMessage(Base):
 
 class UploadedQuestionReview(Base):
     __tablename__ = "uploaded_question_reviews"
+    __table_args__ = (UniqueConstraint("question_id", name="uq_uploaded_question_reviews_question_id"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("questions.id"))
-    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), index=True)
+    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     status: Mapped[ReviewStatus] = mapped_column(Enum(ReviewStatus), default=ReviewStatus.pending)
     comment: Mapped[str | None] = mapped_column(Text(), nullable=True)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -135,7 +183,7 @@ class AnswerSession(Base):
     __tablename__ = "answer_sessions"
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("questions.id"))
     mode: Mapped[SessionMode] = mapped_column(Enum(SessionMode))
     status: Mapped[SessionStatus] = mapped_column(Enum(SessionStatus), default=SessionStatus.created)
@@ -151,7 +199,7 @@ class EvaluationJob(Base):
     __table_args__ = (UniqueConstraint("session_id", name="uq_evaluation_jobs_session_id"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("answer_sessions.id"))
+    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("answer_sessions.id", ondelete="CASCADE"))
     status: Mapped[str] = mapped_column(String(32), default="queued")
     stage: Mapped[str] = mapped_column(String(48), default="queued")
     report_locale: Mapped[str] = mapped_column(String(16), default="en")
@@ -176,7 +224,7 @@ class EvaluationReport(Base):
     __table_args__ = (UniqueConstraint("session_id", name="uq_evaluation_reports_session_id"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("answer_sessions.id"))
+    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("answer_sessions.id", ondelete="CASCADE"))
     model_provider: Mapped[str] = mapped_column(String(80), default="deepseek")
     model_name: Mapped[str] = mapped_column(String(120))
     total_score: Mapped[float] = mapped_column(Numeric(4, 1))
@@ -186,12 +234,29 @@ class EvaluationReport(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
+class ReportFeedback(Base):
+    __tablename__ = "report_feedback"
+    __table_args__ = (UniqueConstraint("report_id", name="uq_report_feedback_report_id"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    report_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("evaluation_reports.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    feedback_type: Mapped[str] = mapped_column(String(32), index=True)
+    comment: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    consent_to_share: Mapped[bool] = mapped_column(Boolean, default=False)
+    answer_snapshot: Mapped[str] = mapped_column(Text())
+    report_snapshot: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
 class ScoreComponent(Base):
     __tablename__ = "score_components"
     __table_args__ = (UniqueConstraint("report_id", name="uq_score_components_report_id"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id"))
+    report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id", ondelete="CASCADE"))
     content_relevance: Mapped[float] = mapped_column(Numeric(3, 1))
     perspective_expansion: Mapped[float] = mapped_column(Numeric(3, 1))
     linguistic_expression: Mapped[float] = mapped_column(Numeric(3, 1))
@@ -202,7 +267,7 @@ class GrammarAnalysisItem(Base):
     __tablename__ = "grammar_analysis_items"
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id"))
+    report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id", ondelete="CASCADE"))
     sentence_index: Mapped[int] = mapped_column(Integer)
     occurrence_index: Mapped[int] = mapped_column(Integer, default=1)
     start_offset: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -218,7 +283,7 @@ class LanguageMetricScore(Base):
     __table_args__ = (UniqueConstraint("report_id", "metric_key", name="uq_language_metric_report_key"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id"))
+    report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_reports.id", ondelete="CASCADE"))
     metric_key: Mapped[str] = mapped_column(String(80))
     score: Mapped[float] = mapped_column(Numeric(3, 1))
 
@@ -226,7 +291,7 @@ class LanguageMetricScore(Base):
 class CreditWallet(Base):
     __tablename__ = "credit_wallets"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     balance: Mapped[int] = mapped_column(Integer, default=180)
     weekly_limit: Mapped[int] = mapped_column(Integer, default=60)
     weekly_used: Mapped[int] = mapped_column(Integer, default=0)
@@ -241,11 +306,11 @@ class CreditLedger(Base):
     __table_args__ = (UniqueConstraint("session_id", "reason", name="uq_credit_ledger_session_reason"),)
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     delta: Mapped[int] = mapped_column(Integer)
     reason: Mapped[str] = mapped_column(String(120))
-    session_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("answer_sessions.id"), nullable=True)
-    admin_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    session_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("answer_sessions.id", ondelete="CASCADE"), nullable=True)
+    admin_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
@@ -253,7 +318,7 @@ class InboxMessage(Base):
     __tablename__ = "inbox_messages"
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(160))
     body: Mapped[str] = mapped_column(Text())
     type: Mapped[str] = mapped_column(String(40), default="system")
@@ -276,7 +341,7 @@ class AdminAuditLog(Base):
     __tablename__ = "admin_audit_logs"
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    admin_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    admin_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     action: Mapped[str] = mapped_column(String(120))
     target_type: Mapped[str] = mapped_column(String(80))
     target_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)

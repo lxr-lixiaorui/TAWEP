@@ -13,7 +13,6 @@ from sqlalchemy import and_, or_, select, update
 from sqlalchemy.orm import selectinload
 
 from backend.core.config import get_settings
-from backend.core.constants import DEMO_USER_ID
 from backend.db.session import AsyncSessionLocal
 from backend.models import (
     AnswerSession,
@@ -825,7 +824,11 @@ async def fail_or_retry_job(job_id: UUID, error: Exception) -> None:
                 return
 
             session = await db.get(AnswerSession, job.session_id, with_for_update=True)
-            wallet = await db.get(CreditWallet, DEMO_USER_ID, with_for_update=True)
+            wallet = (
+                await db.get(CreditWallet, session.user_id, with_for_update=True)
+                if session is not None
+                else None
+            )
             existing_refund = await db.scalar(
                 select(CreditLedger).where(
                     CreditLedger.session_id == job.session_id,
@@ -837,7 +840,7 @@ async def fail_or_retry_job(job_id: UUID, error: Exception) -> None:
                 wallet.weekly_used = max(0, wallet.weekly_used - settings.evaluation_credit_cost)
                 db.add(
                     CreditLedger(
-                        user_id=DEMO_USER_ID,
+                        user_id=session.user_id,
                         delta=settings.evaluation_credit_cost,
                         reason=REFUND_LEDGER_REASON,
                         session_id=job.session_id,

@@ -1,10 +1,18 @@
-from datetime import datetime, timedelta
-
 from fastapi import APIRouter, Depends
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import get_current_user
 from backend.db.session import get_db
+from backend.models import (
+    AnswerSession,
+    EvaluationReport,
+    LanguageMetricScore,
+    Question,
+    ScoreComponent,
+    Topic,
+    User,
+)
 from backend.schemas import BreakdownPoint, DashboardSummary, MatrixRow, RecommendationOut
 from backend.services.practice import get_usage
 
@@ -13,82 +21,153 @@ router = APIRouter()
 
 
 @router.get("/summary", response_model=DashboardSummary)
-async def summary(db: AsyncSession = Depends(get_db)) -> DashboardSummary:
-    user = get_current_user()
+async def summary(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DashboardSummary:
+    credit = await get_usage(db, user.id)
+    average_score, practice_count = (
+        await db.execute(
+            select(func.coalesce(func.avg(EvaluationReport.total_score), 0), func.count(EvaluationReport.id))
+            .join(AnswerSession, AnswerSession.id == EvaluationReport.session_id)
+            .where(AnswerSession.user_id == user.id)
+        )
+    ).one()
     return DashboardSummary(
         alias=user.alias,
         user_id=user.id,
-        average_score=4.0,
-        practice_count=18,
-        credit=await get_usage(db),
+        average_score=float(average_score),
+        practice_count=int(practice_count),
+        credit=credit,
     )
 
 
 @router.get("/recommendations", response_model=list[RecommendationOut])
-async def recommendations() -> list[RecommendationOut]:
+async def recommendations(user: User = Depends(get_current_user)) -> list[RecommendationOut]:
     return [
         RecommendationOut(
             question_no=24,
             summary="Should governments support public transportation with tax revenue?",
             topic="Policy",
-            reason="Logical Structure is your lowest recent dimension in Policy prompts.",
+            reason="Logical Structure is a useful next focus for this prompt.",
         ),
         RecommendationOut(
             question_no=17,
             summary="What is the biggest mistake people make when buying tech products?",
             topic="Technology",
-            reason="Technology questions expose recurring perspective expansion gaps.",
+            reason="This prompt rewards clear perspective expansion.",
         ),
     ]
 
 
 @router.get("/records")
-async def records() -> list[dict]:
-    now = datetime.utcnow()
+async def records(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[dict]:
+    rows = (
+        await db.execute(
+            select(
+                AnswerSession.id,
+                Question.question_no,
+                Topic.name_en,
+                EvaluationReport.total_score,
+                AnswerSession.submitted_at,
+            )
+            .join(EvaluationReport, EvaluationReport.session_id == AnswerSession.id)
+            .join(Question, Question.id == AnswerSession.question_id)
+            .join(Topic, Topic.id == Question.topic_id)
+            .where(AnswerSession.user_id == user.id)
+            .order_by(AnswerSession.submitted_at.desc())
+            .limit(20)
+        )
+    ).all()
     return [
         {
-            "session_id": f"00000000-0000-4000-8000-{index:012d}",
-            "question_no": 10 + index,
-            "topic": ["Education", "Policy", "Technology"][index % 3],
-            "score": round(3.5 + index * 0.1, 1),
-            "submitted_at": now - timedelta(days=index),
+            "session_id": row.id,
+            "question_no": row.question_no,
+            "topic": row.name_en,
+            "score": float(row.total_score),
+            "submitted_at": row.submitted_at,
         }
-        for index in range(1, 8)
+        for row in rows
     ]
 
 
 @router.get("/language-profile")
-async def language_profile() -> dict[str, float]:
-    return {
-        "clarity": 4.1,
-        "precision": 3.7,
-        "variety": 3.6,
-        "cohesion": 3.9,
-        "academic_tone": 3.8,
-        "sentence_control": 3.5,
-    }
+async def language_profile(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, float]:
+    rows = (
+        await db.execute(
+            select(LanguageMetricScore.metric_key, func.avg(LanguageMetricScore.score))
+            .join(EvaluationReport, EvaluationReport.id == LanguageMetricScore.report_id)
+            .join(AnswerSession, AnswerSession.id == EvaluationReport.session_id)
+            .where(AnswerSession.user_id == user.id)
+            .group_by(LanguageMetricScore.metric_key)
+        )
+    ).all()
+    return {key: round(float(score), 1) for key, score in rows}
 
 
 @router.get("/score-breakdown", response_model=list[BreakdownPoint])
-async def score_breakdown() -> list[BreakdownPoint]:
-    now = datetime.utcnow()
+async def score_breakdown(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[BreakdownPoint]:
+    rows = (
+        await db.execute(
+            select(EvaluationReport.created_at, ScoreComponent)
+            .join(ScoreComponent, ScoreComponent.report_id == EvaluationReport.id)
+            .join(AnswerSession, AnswerSession.id == EvaluationReport.session_id)
+            .where(AnswerSession.user_id == user.id)
+            .order_by(EvaluationReport.created_at.desc())
+            .limit(10)
+        )
+    ).all()
     return [
         BreakdownPoint(
-            submitted_at=now - timedelta(days=10 - index),
-            content_relevance=round(3.4 + index * 0.07, 1),
-            perspective_expansion=round(3.2 + index * 0.08, 1),
-            linguistic_expression=round(3.1 + index * 0.05, 1),
-            logical_structure=round(3.3 + index * 0.06, 1),
+            submitted_at=created_at,
+            content_relevance=float(component.content_relevance),
+            perspective_expansion=float(component.perspective_expansion),
+            linguistic_expression=float(component.linguistic_expression),
+            logical_structure=float(component.logical_structure),
         )
-        for index in range(10)
+        for created_at, component in reversed(rows)
     ]
 
 
 @router.get("/topic-score-matrix", response_model=list[MatrixRow])
-async def topic_score_matrix() -> list[MatrixRow]:
+async def topic_score_matrix(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[MatrixRow]:
+    rows = (
+        await db.execute(
+            select(
+                Topic.name_en,
+                func.avg(ScoreComponent.content_relevance),
+                func.avg(ScoreComponent.perspective_expansion),
+                func.avg(ScoreComponent.linguistic_expression),
+                func.avg(ScoreComponent.logical_structure),
+            )
+            .join(Question, Question.topic_id == Topic.id)
+            .join(AnswerSession, AnswerSession.question_id == Question.id)
+            .join(EvaluationReport, EvaluationReport.session_id == AnswerSession.id)
+            .join(ScoreComponent, ScoreComponent.report_id == EvaluationReport.id)
+            .where(AnswerSession.user_id == user.id)
+            .group_by(Topic.name_en)
+            .order_by(Topic.name_en)
+        )
+    ).all()
     return [
-        MatrixRow(topic="Education", content_relevance=4.2, perspective_expansion=3.8, linguistic_expression=3.9, logical_structure=4.0),
-        MatrixRow(topic="Environment", content_relevance=3.7, perspective_expansion=3.4, linguistic_expression=3.8, logical_structure=3.5),
-        MatrixRow(topic="Policy", content_relevance=3.9, perspective_expansion=3.6, linguistic_expression=3.7, logical_structure=3.3),
-        MatrixRow(topic="Technology", content_relevance=4.0, perspective_expansion=3.5, linguistic_expression=3.6, logical_structure=3.7),
+        MatrixRow(
+            topic=row[0],
+            content_relevance=round(float(row[1]), 1),
+            perspective_expansion=round(float(row[2]), 1),
+            linguistic_expression=round(float(row[3]), 1),
+            logical_structure=round(float(row[4]), 1),
+        )
+        for row in rows
     ]

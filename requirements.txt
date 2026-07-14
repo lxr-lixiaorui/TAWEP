@@ -4,3 +4,5 @@ sqlalchemy
 asyncpg
 pydantic[email]
 openai
+PyJWT
+pwdlib[argon2]

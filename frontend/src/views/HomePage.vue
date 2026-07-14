@@ -1,113 +1,133 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import {
+  ArrowRight,
+  BookOpenText,
+  ChartNoAxesCombined,
+  Check,
+  FileSearch,
+  ScanText,
+  WandSparkles
+} from '@lucide/vue'
 import PublicHeader from '../components/PublicHeader.vue'
 
-const stats = [
-  ['96', 'official Academic Discussion prompts'],
-  ['9', 'automatically classified topic groups'],
-  ['0', 'cost to start practicing'],
-  ['4', 'scored writing dimensions']
-]
+const { t } = useI18n()
 
-const reportMatrix = [
-  ['Score', '30-point total, 5-point rubric score, and four dimension scores.'],
-  ['Diagnosis', 'Content, expansion, language, logic, grammar, spelling, and wording issues.'],
-  ['Action Plan', 'Specific edits and priority guidance instead of generic comments.'],
-  ['Rewrite', 'A polished response that preserves the student position and improves execution.'],
-  ['Style Profile', 'Writing habits and academic style patterns; later releases will use this to personalize rewrites.'],
-  ['Progress View', 'Topic and dimension history for finding repeated weaknesses.']
-]
+const stats = computed(() => [
+  ['96', t('home.stats.prompts')],
+  ['9', t('home.stats.topics')],
+  ['0', t('home.stats.cost')],
+  ['4', t('home.stats.dimensions')]
+])
+
+const workflow = computed(() => [
+  { number: '01', title: t('home.workflow.chooseTitle'), body: t('home.workflow.chooseBody') },
+  { number: '02', title: t('home.workflow.writeTitle'), body: t('home.workflow.writeBody') },
+  { number: '03', title: t('home.workflow.improveTitle'), body: t('home.workflow.improveBody') }
+])
+
+const reportLayers = computed(() => [
+  { icon: ChartNoAxesCombined, title: t('home.layers.scoreTitle'), body: t('home.layers.scoreBody') },
+  { icon: FileSearch, title: t('home.layers.diagnosisTitle'), body: t('home.layers.diagnosisBody') },
+  { icon: ScanText, title: t('home.layers.grammarTitle'), body: t('home.layers.grammarBody') },
+  { icon: WandSparkles, title: t('home.layers.rewriteTitle'), body: t('home.layers.rewriteBody') }
+])
 
 const topics = [
-  'Education',
-  'Environment',
-  'Policy',
-  'Business',
-  'Technology',
-  'Consumer Behavior',
-  'Health',
-  'Culture',
-  'Lifelong Learning'
+  'Education', 'Environment', 'Policy', 'Business', 'Technology',
+  'Consumer Behavior', 'Health', 'Culture', 'Lifelong Learning'
 ]
 </script>
 
 <template>
-  <div class="page-shell">
+  <div class="page-shell home-page">
     <PublicHeader />
     <main>
-      <section class="hero-layout intro-fade-scope">
-        <div class="hero-copy container intro-fade intro-fade-1">
-          <div>
-            <p class="eyebrow">Free TOEFL Academic Discussion practice</p>
-            <h1>Practice every prompt, then get feedback you can actually use.</h1>
-            <p>
-              TAWEP is built for repeat practice: a full question bank, automatic topic
-              classification, calibrated AI scoring, and reports that explain what to fix in the
-              next draft rather than only judging the last one.
-            </p>
-            <div class="hero-actions">
-              <router-link to="/questionbank" class="btn primary">Start Free Practice</router-link>
-              <router-link to="/examplereport" class="btn">See Example Report</router-link>
-            </div>
+      <section class="home-hero">
+        <img src="/images/tawep-report-preview.png" alt="TAWEP evaluation report with score breakdown and prioritized feedback" />
+        <div class="home-hero-shade" aria-hidden="true"></div>
+        <div class="container home-hero-content intro-fade intro-fade-1">
+          <p class="home-offer"><Check :size="16" />{{ t('home.offer') }}</p>
+          <h1>{{ t('home.title') }}</h1>
+          <p class="home-lead">{{ t('home.lead') }}</p>
+          <div class="hero-actions">
+            <router-link to="/questionbank" class="btn primary home-primary-cta">
+              {{ t('home.start') }}<ArrowRight :size="18" />
+            </router-link>
+            <router-link to="/examplereport" class="btn home-report-link">{{ t('home.example') }}</router-link>
           </div>
+          <p class="home-no-card">{{ t('home.noCard') }}</p>
         </div>
+      </section>
 
-        <section class="intro-proof container intro-fade intro-fade-2">
-          <div v-for="item in stats" :key="item[1]" class="proof-stat">
+      <section class="home-proof-rail" aria-label="TAWEP facts">
+        <div class="container">
+          <article v-for="item in stats" :key="item[1]">
             <strong>{{ item[0] }}</strong>
             <span>{{ item[1] }}</span>
-          </div>
-        </section>
+          </article>
+        </div>
+      </section>
 
-        <section class="intro-section container intro-split intro-fade intro-fade-3">
-          <div>
-            <p class="eyebrow">Question bank</p>
-            <h2 class="section-title">Every current prompt is free and sorted by topic.</h2>
-            <p class="section-copy">
-              The current legacy bank parses into 96 Academic Discussion questions. TAWEP groups
-              them into topic buckets automatically, so students can drill a weak area instead of
-              scrolling through a flat list.
-            </p>
-          </div>
-          <div class="topic-grid">
-            <span v-for="topic in topics" :key="topic">{{ topic }}</span>
-          </div>
-        </section>
+      <section class="home-section container home-workflow intro-fade intro-fade-2">
+        <div class="home-section-intro">
+          <p class="eyebrow">{{ t('home.workflow.overline') }}</p>
+          <h2>{{ t('home.workflow.title') }}</h2>
+          <p>{{ t('home.workflow.body') }}</p>
+        </div>
+        <div class="workflow-list">
+          <article v-for="step in workflow" :key="step.number">
+            <span>{{ step.number }}</span>
+            <div><h3>{{ step.title }}</h3><p>{{ step.body }}</p></div>
+          </article>
+        </div>
+      </section>
 
-        <section class="intro-section container intro-fade intro-fade-4">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Report matrix</p>
-              <h2 class="section-title">One report, multiple layers of feedback.</h2>
-            </div>
-            <p class="section-copy compact">
-              The scoring model gives the first pass today. The roadmap is a larger language model
-              plus math-model calibration so scores and advice become more stable over time.
-            </p>
+      <section class="home-report-band">
+        <div class="container home-report-layout intro-fade intro-fade-3">
+          <div class="report-band-focus">
+            <p class="eyebrow">{{ t('home.report.overline') }}</p>
+            <h2>{{ t('home.report.title') }}</h2>
+            <p>{{ t('home.report.body') }}</p>
+            <router-link class="text-link light" to="/examplereport">
+              {{ t('home.report.open') }}<ArrowRight :size="17" />
+            </router-link>
           </div>
-          <div class="report-matrix">
-            <article v-for="item in reportMatrix" :key="item[0]" class="report-cell">
-              <strong>{{ item[0] }}</strong>
-              <p>{{ item[1] }}</p>
+          <div class="report-layer-list">
+            <article v-for="layer in reportLayers" :key="layer.title">
+              <component :is="layer.icon" :size="20" />
+              <div><h3>{{ layer.title }}</h3><p>{{ layer.body }}</p></div>
             </article>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section class="intro-section container intro-split intro-fade intro-fade-5">
-          <div>
-            <p class="eyebrow">Actionable improvement</p>
-            <h2 class="section-title">Advice should change the next essay, not just label this one.</h2>
-          </div>
-          <div class="roadmap-panel">
-            <p>
-              TAWEP can already produce focused recommendations and an AI Rewrite. The next model
-              direction is personal style analysis: learn a student's academic writing patterns,
-              then make rewrites that sound like a stronger version of that same writer.
-            </p>
-            <router-link to="/questionbank" class="btn primary">Choose a Prompt</router-link>
-          </div>
-        </section>
+      <section class="home-section container home-topics intro-fade intro-fade-4">
+        <div class="home-section-intro">
+          <p class="eyebrow">{{ t('home.bank.overline') }}</p>
+          <h2>{{ t('home.bank.title') }}</h2>
+          <p>{{ t('home.bank.body') }}</p>
+          <router-link class="text-link" to="/questionbank">
+            {{ t('home.bank.browse') }}<ArrowRight :size="17" />
+          </router-link>
+        </div>
+        <div class="topic-index">
+          <span v-for="(topic, index) in topics" :key="topic">
+            <small>{{ String(index + 1).padStart(2, '0') }}</small>{{ topic }}
+          </span>
+        </div>
+      </section>
+
+      <section class="home-final-band">
+        <div class="container">
+          <BookOpenText :size="28" />
+          <div><h2>{{ t('home.final.title') }}</h2><p>{{ t('home.final.body') }}</p></div>
+          <router-link class="btn attention-cta" to="/questionbank">
+            {{ t('home.final.action') }}<ArrowRight :size="18" />
+          </router-link>
+        </div>
       </section>
     </main>
   </div>
 </template>
-

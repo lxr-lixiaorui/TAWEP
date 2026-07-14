@@ -3,12 +3,18 @@ import { onMounted, reactive, ref } from 'vue'
 import { useMessage } from 'naive-ui'
 import AppShell from '../components/AppShell.vue'
 import { apiGet, apiPatch } from '../api/client'
+import { useAuthStore } from '../stores/auth'
 
 const message = useMessage()
+const auth = useAuthStore()
 const user = reactive({ alias: '', preferred_locale: 'en', theme: 'light' })
 const usage = ref<any | null>(null)
 
-async function save() { await apiPatch('/me', user); message.success('Settings saved') }
+async function save() {
+  const saved = await apiPatch<any>('/me', user)
+  auth.user = saved
+  message.success('Settings saved')
+}
 onMounted(async () => { const me = await apiGet<any>('/me'); Object.assign(user, me); usage.value = await apiGet('/me/usage') })
 </script>
 

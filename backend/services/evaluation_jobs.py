@@ -5,7 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.config import get_settings
-from backend.core.constants import DEMO_USER_ID
 from backend.models import (
     AnswerSession,
     CreditLedger,
@@ -16,7 +15,7 @@ from backend.models import (
 )
 from backend.schemas import EvaluationJobOut
 from backend.services.evaluation_contract import normalize_locale
-from backend.services.practice import InsufficientCreditError, ensure_demo_account
+from backend.services.practice import InsufficientCreditError, ensure_user_wallet
 
 
 EVALUATION_LEDGER_REASON = "writing_evaluation"
@@ -70,6 +69,7 @@ def evaluation_job_out(job: EvaluationJob) -> EvaluationJobOut:
 
 async def enqueue_evaluation(
     db: AsyncSession,
+    user_id: UUID,
     session_id: UUID,
     answer_text: str,
     report_locale: str,
@@ -77,10 +77,10 @@ async def enqueue_evaluation(
     settings = get_settings()
     locale = normalize_locale(report_locale)
     async with db.begin():
-        await ensure_demo_account(db)
+        await ensure_user_wallet(db, user_id)
         session = await db.scalar(
             select(AnswerSession)
-            .where(AnswerSession.id == session_id, AnswerSession.user_id == DEMO_USER_ID)
+            .where(AnswerSession.id == session_id, AnswerSession.user_id == user_id)
             .with_for_update()
         )
         if session is None:
@@ -116,10 +116,10 @@ async def enqueue_evaluation(
             return evaluation_job_out(job)
 
         wallet = await db.scalar(
-            select(CreditWallet).where(CreditWallet.user_id == DEMO_USER_ID).with_for_update()
+            select(CreditWallet).where(CreditWallet.user_id == user_id).with_for_update()
         )
         if wallet is None:
-            raise RuntimeError("Demo credit wallet could not be created")
+            raise RuntimeError("Credit wallet could not be created")
         cost = settings.evaluation_credit_cost
         if wallet.balance < cost or wallet.weekly_used + cost > wallet.weekly_limit:
             raise InsufficientCreditError
@@ -132,7 +132,7 @@ async def enqueue_evaluation(
         session.submitted_at = _now()
         db.add(
             CreditLedger(
-                user_id=DEMO_USER_ID,
+                user_id=user_id,
                 delta=-cost,
                 reason=EVALUATION_LEDGER_REASON,
                 session_id=session.id,
@@ -154,19 +154,19 @@ async def enqueue_evaluation(
         return evaluation_job_out(job)
 
 
-async def get_evaluation_job(db: AsyncSession, job_id: UUID) -> EvaluationJobOut | None:
+async def get_evaluation_job(db: AsyncSession, user_id: UUID, job_id: UUID) -> EvaluationJobOut | None:
     job = await db.scalar(
         select(EvaluationJob)
         .join(AnswerSession, AnswerSession.id == EvaluationJob.session_id)
-        .where(EvaluationJob.id == job_id, AnswerSession.user_id == DEMO_USER_ID)
+        .where(EvaluationJob.id == job_id, AnswerSession.user_id == user_id)
     )
     return evaluation_job_out(job) if job is not None else None
 
 
-async def get_session_evaluation(db: AsyncSession, session_id: UUID) -> EvaluationJobOut | None:
+async def get_session_evaluation(db: AsyncSession, user_id: UUID, session_id: UUID) -> EvaluationJobOut | None:
     job = await db.scalar(
         select(EvaluationJob)
         .join(AnswerSession, AnswerSession.id == EvaluationJob.session_id)
-        .where(EvaluationJob.session_id == session_id, AnswerSession.user_id == DEMO_USER_ID)
+        .where(EvaluationJob.session_id == session_id, AnswerSession.user_id == user_id)
     )
     return evaluation_job_out(job) if job is not None else None

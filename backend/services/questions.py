@@ -1,11 +1,19 @@
 from pathlib import Path
 from re import sub
 
-from sqlalchemy import select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
-from backend.models import Question, Topic
+from backend.models import (
+    Question,
+    QuestionMessage,
+    QuestionSource,
+    ReviewStatus,
+    Topic,
+    UploadedQuestionReview,
+)
+from backend.schemas import QuestionCreate
 from backend.schemas import QuestionMessageOut, QuestionOut
 
 
@@ -43,6 +51,80 @@ def _summary_from_prompt(prompt: str) -> str:
     if "?" in compact:
         compact = compact.split("?")[0] + "?"
     return compact[:150]
+
+
+def submission_summary(prompt: str) -> str:
+    compact = sub(r"\s+", " ", prompt).strip()
+    questions = [part.strip() for part in compact.split("?") if part.strip()]
+    if "?" in compact and questions:
+        compact = f"{questions[-1]}?"
+    return compact[:240]
+
+
+async def resolve_topic(session: AsyncSession, topic_value: str) -> Topic | None:
+    normalized = topic_value.strip().lower()
+    return await session.scalar(
+        select(Topic).where(
+            (func.lower(Topic.name_en) == normalized) | (func.lower(Topic.key) == normalized)
+        )
+    )
+
+
+async def next_question_number(session: AsyncSession) -> int:
+    await session.execute(text("SELECT pg_advisory_xact_lock(72649301)"))
+    current = await session.scalar(select(func.max(Question.question_no)))
+    return int(current or 0) + 1
+
+
+def apply_question_messages(question: Question, payload: QuestionCreate) -> None:
+    values = {
+        "professor": (payload.professor_name.strip(), payload.professor_content.strip(), 1),
+        "student_a": (payload.student_a_name.strip(), payload.student_a_content.strip(), 2),
+        "student_b": (payload.student_b_name.strip(), payload.student_b_content.strip(), 3),
+    }
+    existing = {message.speaker_role: message for message in question.messages}
+    for role, (name, content, sort_order) in values.items():
+        message = existing.get(role)
+        if message is None:
+            question.messages.append(
+                QuestionMessage(
+                    speaker_role=role,
+                    speaker_name=name,
+                    content=content,
+                    sort_order=sort_order,
+                )
+            )
+        else:
+            message.speaker_name = name
+            message.content = content
+            message.sort_order = sort_order
+    question.word_count = sum(len(content.split()) for _, content, _ in values.values())
+
+
+async def create_uploaded_question(
+    session: AsyncSession,
+    creator_user_id,
+    payload: QuestionCreate,
+) -> Question:
+    topic = await resolve_topic(session, payload.topic)
+    if topic is None:
+        raise ValueError("Unknown topic")
+    question = Question(
+        question_no=await next_question_number(session),
+        source=QuestionSource.user,
+        creator_user_id=creator_user_id,
+        topic_id=topic.id,
+        exam_type=payload.exam_type,
+        difficulty=payload.difficulty,
+        summary=submission_summary(payload.professor_content),
+        status=ReviewStatus.pending,
+        messages=[],
+    )
+    apply_question_messages(question, payload)
+    session.add(question)
+    await session.flush()
+    session.add(UploadedQuestionReview(question_id=question.id, status=ReviewStatus.pending))
+    return question
 
 
 def load_legacy_questions(path: str = "static/table/2023_AcaTalk.txt") -> list[QuestionOut]:
@@ -145,7 +227,7 @@ async def filter_database_questions(
     topic: str | None = None,
     exam_type: str | None = None,
 ) -> list[QuestionOut]:
-    statement = _question_statement().order_by(Question.question_no)
+    statement = _question_statement().where(Question.status == ReviewStatus.accepted).order_by(Question.question_no)
     if difficulty:
         statement = statement.where(Question.difficulty == difficulty)
     if source:
@@ -159,7 +241,10 @@ async def filter_database_questions(
 
 
 async def get_database_question_by_no(session: AsyncSession, question_no: int) -> QuestionOut | None:
-    statement = _question_statement().where(Question.question_no == question_no)
+    statement = _question_statement().where(
+        Question.question_no == question_no,
+        Question.status == ReviewStatus.accepted,
+    )
     question = await session.scalar(statement)
     return _question_out(question) if question is not None else None
 

@@ -1,10 +1,11 @@
 ﻿<script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { CircleHelp, MessageSquare, TrendingDown, TrendingUp, X } from '@lucide/vue'
 import { useMessage, useNotification } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import AppShell from '../components/AppShell.vue'
-import { apiGet, apiPost } from '../api/client'
+import { apiDownload, apiGet, apiPost } from '../api/client'
 import { useAppStore } from '../stores/app'
 
 const props = defineProps<{ activeTab?: string }>()
@@ -15,6 +16,7 @@ const notification = useNotification()
 const appStore = useAppStore()
 const { t } = useI18n()
 const sessionId = String(route.params.sessionId)
+const isExampleSession = sessionId === '00000000-0000-4000-8000-000000000008'
 const active = ref(props.activeTab || 'answer')
 const session = ref<any | null>(null)
 const question = ref<any | null>(null)
@@ -24,6 +26,13 @@ const grammar = ref<any[]>([])
 const answer = ref('')
 const submittedAnswer = ref('')
 const submitting = ref(false)
+const feedbackOpen = ref(false)
+const feedbackSubmitting = ref(false)
+const feedbackType = ref<'too_high' | 'too_low' | 'other' | ''>('')
+const feedbackComment = ref('')
+const feedbackConsent = ref(false)
+const feedbackStatus = ref<{ submitted: boolean; feedback_type?: string; created_at?: string }>({ submitted: false })
+const feedbackStatusLoaded = ref(false)
 const timeLeft = ref<number | null>(null)
 const hideTimer = ref(false)
 const hideWordCount = ref(false)
@@ -32,7 +41,14 @@ let timerId: number | undefined
 let evaluationPollId: number | undefined
 let evaluationRequestActive = false
 let completionNotified = false
-const downloadUrl = `/api/v1/sessions/${sessionId}/download`
+
+async function downloadReport() {
+  try {
+    await apiDownload(`/sessions/${sessionId}/download`, `tawep-report-${sessionId}.html`)
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : 'Download failed')
+  }
+}
 
 const wordCount = computed(() => answer.value.trim().split(/\s+/).filter(Boolean).length)
 const timerLabel = computed(() => {
@@ -85,7 +101,12 @@ const scoredReportCards = computed(() => reportCards.value.filter(card => card.s
 const strongestReportCard = computed(() => [...scoredReportCards.value].sort((a, b) => Number(b.score) - Number(a.score))[0])
 const sortedFocusCards = computed(() => [...scoredReportCards.value].sort((a, b) => Number(a.score) - Number(b.score)))
 const focusReportCard = computed(() => sortedFocusCards.value[0])
-const priorityActionCards = computed(() => reportCards.value)
+const priorityActionCards = computed(() => [...reportCards.value].sort((a, b) => {
+  if (a.score === null && b.score === null) return 0
+  if (a.score === null) return 1
+  if (b.score === null) return -1
+  return a.score - b.score
+}))
 const grammarIssueCount = computed(() => displayGrammar.value.filter((item: any) => item.issue_type === 'grammar').length)
 const answerForAnalysis = computed(() => submittedAnswer.value || answer.value || session.value?.answer_text || displayGrammar.value.map((item: any) => item.original_text).filter(Boolean).join(' '))
 const spellingIssueCount = computed(() => displayGrammar.value.filter((item: any) => item.issue_type === 'spelling').length)
@@ -105,6 +126,52 @@ const rewriteSections = computed(() => {
   }
   return []
 })
+const canSubmitFeedback = computed(() => Boolean(
+  feedbackType.value
+  && feedbackConsent.value
+  && (feedbackType.value !== 'other' || feedbackComment.value.trim())
+))
+
+async function loadFeedbackStatus() {
+  if (isExampleSession || !report.value) return
+  try {
+    feedbackStatus.value = await apiGet(`/sessions/${sessionId}/feedback`)
+  } catch {
+    feedbackStatus.value = { submitted: false }
+  } finally {
+    feedbackStatusLoaded.value = true
+  }
+}
+
+function openFeedback() {
+  feedbackType.value = ''
+  feedbackComment.value = ''
+  feedbackConsent.value = false
+  feedbackOpen.value = true
+}
+
+async function submitFeedback() {
+  if (!canSubmitFeedback.value || feedbackSubmitting.value) return
+  if (feedbackType.value === 'other' && !feedbackComment.value.trim()) {
+    message.warning(t('report.feedback.otherRequired'))
+    return
+  }
+  feedbackSubmitting.value = true
+  try {
+    feedbackStatus.value = await apiPost(`/sessions/${sessionId}/feedback`, {
+      feedback_type: feedbackType.value,
+      comment: feedbackComment.value.trim() || null,
+      consent_to_share: true
+    })
+    feedbackStatusLoaded.value = true
+    feedbackOpen.value = false
+    message.success(t('report.feedback.success'))
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : t('report.feedback.otherRequired'))
+  } finally {
+    feedbackSubmitting.value = false
+  }
+}
 
 function sectionReady(name: string) {
   return Boolean(report.value) || availableSections.value.has(name)
@@ -396,6 +463,10 @@ watch(active, async (next) => {
     grammar.value = await apiGet(`/sessions/${sessionId}/grammar-analysis`)
   }
 })
+
+watch(report, (next) => {
+  if (next) void loadFeedbackStatus()
+})
 </script>
 
 <template>
@@ -513,7 +584,7 @@ watch(active, async (next) => {
         </div>
       </section>
 
-      <header class="report-hero panel focused">
+      <header class="report-hero focused">
         <div class="report-hero-copy">
           <p class="eyebrow">{{ t('report.evaluationReport') }}</p>
           <h1 v-if="focusReportCard" class="section-reveal">{{ t('report.focusOn', { criterion: focusReportCard.label }) }}</h1>
@@ -572,8 +643,14 @@ watch(active, async (next) => {
             <h2 class="section-title">{{ t('report.scoreByCriteria') }}</h2>
           </div>
         </div>
-        <div class="criteria-grid">
-          <article v-for="card in reportCards" :key="card.key" class="criteria-card panel">
+        <div class="criteria-list">
+          <article
+            v-for="(card, index) in priorityActionCards"
+            :key="card.key"
+            class="criteria-row"
+            :class="{ priority: index === 0 }"
+          >
+            <span class="criteria-rank">{{ String(index + 1).padStart(2, '0') }}</span>
             <div class="criteria-card-head">
               <h3>{{ card.label }}</h3>
               <strong v-if="card.score !== null" class="section-reveal">{{ card.score }} / 5</strong>
@@ -586,28 +663,40 @@ watch(active, async (next) => {
         </div>
       </section>
 
-      <section class="report-section action-plan panel">
+      <section class="report-section action-plan">
         <div class="action-plan-head">
           <p class="eyebrow">{{ t('report.actionPlan') }}</p>
           <h2 class="section-title">{{ t('report.actionPlanByCriteria') }}</h2>
         </div>
-        <article v-for="(card, index) in priorityActionCards" :key="`priority-${card.key}`" class="priority-step" :class="{ primary: index === 0 }">
-          <span class="step-number">{{ index + 1 }}</span>
-          <div>
-            <h3>{{ card.label }}</h3>
-            <p v-if="card.problem">{{ card.problem }}</p>
-            <div v-else class="skeleton-copy"><i></i><i class="short"></i></div>
+        <details
+          v-for="(card, index) in priorityActionCards"
+          :key="`priority-${card.key}`"
+          class="priority-step"
+          :class="{ primary: index === 0 }"
+          :open="index === 0"
+        >
+          <summary>
+            <span class="step-number">{{ index + 1 }}</span>
+            <span><strong>{{ card.label }}</strong><small>{{ card.score }} / 5</small></span>
+            <i aria-hidden="true"></i>
+          </summary>
+          <div class="priority-step-body">
+            <div>
+              <span class="action-kicker">{{ t('report.breakdown') }}</span>
+              <p v-if="card.problem">{{ card.problem }}</p>
+              <div v-else class="skeleton-copy"><i></i><i class="short"></i></div>
+            </div>
+            <div class="next-step-box">
+              <span class="action-kicker">{{ t('report.nextStep') }}</span>
+              <router-link v-if="card.key === 'linguistic_expression' && sectionReady('improvements')" class="grammar-next-link" :to="grammarAnalysisPath">{{ t('report.openGrammar') }}</router-link>
+              <p v-if="card.improvement" class="section-reveal">{{ card.improvement }}</p>
+              <div v-else class="skeleton-copy"><i></i><i></i><i class="short"></i></div>
+            </div>
           </div>
-          <div class="next-step-box">
-            <span class="action-kicker">{{ t('report.nextStep') }}</span>
-            <router-link v-if="card.key === 'linguistic_expression' && sectionReady('improvements')" class="grammar-next-link" :to="grammarAnalysisPath">{{ t('report.openGrammar') }}</router-link>
-            <p v-if="card.improvement" class="section-reveal">{{ card.improvement }}</p>
-            <div v-else class="skeleton-copy"><i></i><i></i><i class="short"></i></div>
-          </div>
-        </article>
+        </details>
       </section>
 
-      <section class="rewrite-entry panel">
+      <section class="rewrite-entry">
         <div>
           <p class="eyebrow">{{ t('report.aiRewrite') }}</p>
           <h2>{{ t('rewrite.entryTitle') }}</h2>
@@ -615,7 +704,29 @@ watch(active, async (next) => {
         </div>
         <router-link class="btn primary" :to="rewritePath">{{ t('rewrite.open') }}</router-link>
       </section>
+
+      <section v-if="report && !isExampleSession && feedbackStatusLoaded" class="report-feedback-entry">
+        <div>
+          <MessageSquare :size="20" />
+          <span><strong>{{ feedbackStatus.submitted ? t('report.feedback.submittedTitle') : t('report.feedback.title') }}</strong><small>{{ feedbackStatus.submitted ? t('report.feedback.submittedBody') : t('report.feedback.body') }}</small></span>
+        </div>
+        <button v-if="!feedbackStatus.submitted" class="btn" @click="openFeedback"><MessageSquare :size="16" />{{ t('report.feedback.open') }}</button>
+      </section>
     </article>
+
+    <n-modal v-model:show="feedbackOpen">
+      <div class="panel report-feedback-dialog" role="dialog" aria-modal="true" aria-labelledby="report-feedback-title">
+        <header><div><p class="eyebrow">{{ t('report.feedback.open') }}</p><h2 id="report-feedback-title">{{ t('report.feedback.dialogTitle') }}</h2><p>{{ t('report.feedback.dialogBody') }}</p></div><button class="btn ghost small icon-btn" :title="t('report.feedback.cancel')" :aria-label="t('report.feedback.cancel')" @click="feedbackOpen = false"><X :size="17" /></button></header>
+        <div class="report-feedback-choices" role="radiogroup">
+          <button type="button" :class="{ active: feedbackType === 'too_high' }" role="radio" :aria-checked="feedbackType === 'too_high'" @click="feedbackType = 'too_high'"><TrendingUp :size="19" /><span><strong>{{ t('report.feedback.tooHigh') }}</strong></span></button>
+          <button type="button" :class="{ active: feedbackType === 'too_low' }" role="radio" :aria-checked="feedbackType === 'too_low'" @click="feedbackType = 'too_low'"><TrendingDown :size="19" /><span><strong>{{ t('report.feedback.tooLow') }}</strong></span></button>
+          <button type="button" :class="{ active: feedbackType === 'other' }" role="radio" :aria-checked="feedbackType === 'other'" @click="feedbackType = 'other'"><CircleHelp :size="19" /><span><strong>{{ t('report.feedback.other') }}</strong></span></button>
+        </div>
+        <label class="form-field"><span>{{ t('report.feedback.comment') }}</span><textarea v-model="feedbackComment" class="textarea" maxlength="4000" :required="feedbackType === 'other'" :placeholder="t('report.feedback.commentPlaceholder')"></textarea></label>
+        <label class="report-feedback-consent"><input v-model="feedbackConsent" type="checkbox" /><span>{{ t('report.feedback.consent') }}</span></label>
+        <footer><button class="btn" type="button" @click="feedbackOpen = false">{{ t('report.feedback.cancel') }}</button><button class="btn primary" type="button" :disabled="!canSubmitFeedback || feedbackSubmitting" @click="submitFeedback">{{ feedbackSubmitting ? t('report.feedback.submitting') : t('report.feedback.submit') }}</button></footer>
+      </div>
+    </n-modal>
 
     <article v-if="active === 'rewrite'" class="rewrite-workspace">
       <header class="rewrite-heading">
@@ -704,7 +815,7 @@ watch(active, async (next) => {
     </article>
 
     <section v-if="active === 'download'" class="panel panel-pad">
-      <a v-if="report" :href="downloadUrl" target="_blank" class="btn primary">{{ t('report.downloadReport') }}</a>
+      <button v-if="report" class="btn primary" @click="downloadReport">{{ t('report.downloadReport') }}</button>
       <p v-else class="muted">{{ t('report.downloadWaiting') }}</p>
     </section>
   </AppShell>
