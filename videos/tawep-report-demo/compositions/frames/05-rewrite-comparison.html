@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>TAWEP Semantic Rewrite Comparison</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        * {
+          box-sizing: border-box;
+        }
+
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          container-type: size;
+        }
+
+        [id="frame-05-rewrite-comparison-ground"] {
+          position: absolute;
+          inset: 0;
+          background: #ffffff;
+        }
+
+        [id="frame-05-rewrite-comparison-scene"] {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        [id="frame-05-rewrite-comparison-surface"] {
+          position: absolute;
+          left: 4.1667cqw;
+          top: 6.2963cqh;
+          width: 91.6667cqw;
+          height: 68.7037cqh;
+          overflow: hidden;
+          border: 1.5px solid rgba(0, 109, 111, 0.2);
+          border-radius: 12px;
+          background: #ffffff;
+          will-change: transform, opacity;
+        }
+
+        [id="frame-05-rewrite-comparison-image"] {
+          position: absolute;
+          left: -9.4531cqw;
+          top: -38.1296cqh;
+          width: 110.6944cqw;
+          height: 110.6944cqh;
+          max-width: none;
+          display: block;
+          user-select: none;
+          pointer-events: none;
+        }
+
+        [id="frame-05-rewrite-comparison-lower-veil"] {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 16.2963cqh;
+          bottom: 0;
+          background: rgba(255, 255, 255, 0.985);
+          pointer-events: none;
+          will-change: opacity;
+        }
+
+        [data-05-rewrite-focus],
+        [data-05-rewrite-legend] {
+          position: absolute;
+          display: block;
+          border-radius: 4px;
+          opacity: 0;
+          transform-origin: 0 50%;
+          pointer-events: none;
+          will-change: transform, opacity;
+        }
+
+        [data-05-rewrite-focus="logic"] {
+          left: 7.2656cqw;
+          top: 18.7963cqh;
+          width: 6.1458cqw;
+          height: 2.4074cqh;
+          background: rgba(96, 222, 151, 0.46);
+        }
+
+        [data-05-rewrite-focus="reasoning"] {
+          left: 18.6979cqw;
+          top: 43.7963cqh;
+          width: 17.5cqw;
+          height: 2.4074cqh;
+          background: rgba(255, 217, 89, 0.48);
+        }
+
+        [data-05-rewrite-focus="removed"] {
+          left: 50.1042cqw;
+          top: 44.537cqh;
+          width: 15.1042cqw;
+          height: 2.7778cqh;
+          background: rgba(255, 163, 184, 0.43);
+        }
+
+        [data-05-rewrite-focus="expression"] {
+          left: 14.0104cqw;
+          top: 8.0556cqh;
+          width: 25.4688cqw;
+          height: 2.5926cqh;
+          background: rgba(116, 190, 242, 0.46);
+        }
+
+        [data-05-rewrite-legend] {
+          top: 64.3519cqh;
+          width: 1.875cqw;
+          height: 2.037cqh;
+          border: 1.5px solid rgba(31, 35, 41, 0.12);
+        }
+
+        [data-05-rewrite-legend="logic"] {
+          left: 7.7604cqw;
+          background: rgba(96, 222, 151, 0.34);
+        }
+
+        [data-05-rewrite-legend="reasoning"] {
+          left: 17.7604cqw;
+          background: rgba(255, 217, 89, 0.38);
+        }
+
+        [data-05-rewrite-legend="removed"] {
+          left: 27.1354cqw;
+          background: rgba(255, 163, 184, 0.34);
+        }
+
+        [data-05-rewrite-legend="expression"] {
+          left: 36.7188cqw;
+          background: rgba(116, 190, 242, 0.36);
+        }
+
+        [id="frame-05-rewrite-comparison-focus-line"] {
+          position: absolute;
+          left: 4.1667cqw;
+          top: 77.4074cqh;
+          width: 91.6667cqw;
+          height: 3px;
+          border-radius: 0;
+          background: rgba(0, 109, 111, 0.15);
+          overflow: hidden;
+        }
+
+        [id="frame-05-rewrite-comparison-focus-line-fill"] {
+          display: block;
+          width: 100%;
+          height: 100%;
+          background: #006d6f;
+          transform-origin: 0 50%;
+          will-change: transform;
+        }
+      </style>
+
+      <div data-hf-id="hf-6qaf" id="root" data-composition-id="05-rewrite-comparison" data-width="1920" data-height="1080" data-duration="3.5">
+        <div data-hf-id="hf-pqvc" id="frame-05-rewrite-comparison-ground" class="clip" data-start="0" data-duration="3.5" data-track-index="0"></div>
+
+        <div data-hf-id="hf-w3l8" id="frame-05-rewrite-comparison-scene" class="clip" data-start="0" data-duration="3.5" data-track-index="1">
+          <div data-hf-id="hf-8jlp" id="frame-05-rewrite-comparison-surface">
+            <img data-hf-id="hf-n3sp" data-layout-allow-overflow id="frame-05-rewrite-comparison-image" src="capture/assets/rewrite.png" alt="" draggable="false">
+
+            <span data-hf-id="hf-ip29" data-05-rewrite-focus="logic"></span>
+            <span data-hf-id="hf-nes7" data-05-rewrite-focus="reasoning"></span>
+            <span data-hf-id="hf-p8l3" data-05-rewrite-focus="removed"></span>
+            <span data-hf-id="hf-voqz" data-05-rewrite-focus="expression"></span>
+
+            <span data-hf-id="hf-9j3g" data-05-rewrite-legend="logic"></span>
+            <span data-hf-id="hf-iuiy" data-05-rewrite-legend="reasoning"></span>
+            <span data-hf-id="hf-69ly" data-05-rewrite-legend="removed"></span>
+            <span data-hf-id="hf-fczw" data-05-rewrite-legend="expression"></span>
+
+            <div data-hf-id="hf-korw" id="frame-05-rewrite-comparison-lower-veil"></div>
+          </div>
+
+          <div data-hf-id="hf-wjcb" id="frame-05-rewrite-comparison-focus-line">
+            <span data-hf-id="hf-vxde" id="frame-05-rewrite-comparison-focus-line-fill"></span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+
+        const timeline = gsap.timeline({ paused: true });
+        const surface = document.getElementById("frame-05-rewrite-comparison-surface");
+        const veil = document.getElementById("frame-05-rewrite-comparison-lower-veil");
+        const progress = document.getElementById("frame-05-rewrite-comparison-focus-line-fill");
+
+        timeline.fromTo(
+          surface,
+          { opacity: 0, y: 14, scale: 0.988 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.62, ease: "power3.out" },
+          0,
+        );
+        timeline.fromTo(
+          progress,
+          { scaleX: 0 },
+          { scaleX: 1, duration: 3.18, ease: "none" },
+          0,
+        );
+        timeline.fromTo(
+          veil,
+          { opacity: 1 },
+          { opacity: 0, duration: 0.45, ease: "power2.out" },
+          0.45,
+        );
+
+        const focusBeats = [
+          { focus: document.querySelector('[data-05-rewrite-focus="logic"]'), legend: document.querySelector('[data-05-rewrite-legend="logic"]'), start: 0.9 },
+          { focus: document.querySelector('[data-05-rewrite-focus="reasoning"]'), legend: document.querySelector('[data-05-rewrite-legend="reasoning"]'), start: 1.22 },
+          { focus: document.querySelector('[data-05-rewrite-focus="removed"]'), legend: document.querySelector('[data-05-rewrite-legend="removed"]'), start: 1.54 },
+          { focus: document.querySelector('[data-05-rewrite-focus="expression"]'), legend: document.querySelector('[data-05-rewrite-legend="expression"]'), start: 1.86 },
+        ];
+
+        focusBeats.forEach(({ focus, legend, start }) => {
+          timeline.fromTo(
+            focus,
+            { opacity: 0, scaleX: 0 },
+            { opacity: 0.82, scaleX: 1, duration: 0.18, ease: "power2.out" },
+            start,
+          );
+          timeline.to(
+            focus,
+            { opacity: 0, duration: 0.16, ease: "power1.out" },
+            start + 0.18,
+          );
+          timeline.fromTo(
+            legend,
+            { opacity: 0, scale: 0.82 },
+            { opacity: 0.9, scale: 1.12, duration: 0.14, ease: "power2.out" },
+            start,
+          );
+          timeline.to(
+            legend,
+            { opacity: 0, scale: 1, duration: 0.2, ease: "power1.out" },
+            start + 0.14,
+          );
+        });
+
+        timeline.to(
+          surface,
+          { opacity: 0.12, scale: 0.994, duration: 0.32, ease: "power2.inOut" },
+          3.18,
+        );
+        timeline.to(
+          "#frame-05-rewrite-comparison-focus-line",
+          { opacity: 0, duration: 0.25, ease: "power1.in" },
+          3.2,
+        );
+
+        window.__timelines["05-rewrite-comparison"] = timeline;
+      </script>
+    </template>
+  </body>
+</html>

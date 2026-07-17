@@ -55,7 +55,13 @@ async def create_session(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> SessionOut:
-    session = await create_database_session(db, user.id, question_no, payload.mode)
+    try:
+        session = await create_database_session(db, user.id, question_no, payload.mode)
+    except InsufficientCreditError as exc:
+        raise HTTPException(
+            status_code=402,
+            detail={"code": "INSUFFICIENT_CREDIT", "message": "Credit is not enough to start a scored session."},
+        ) from exc
     if session is None:
         raise HTTPException(status_code=404, detail="Question not found")
     return session

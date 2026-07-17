@@ -6,3 +6,4 @@ pydantic[email]
 openai
 PyJWT
 pwdlib[argon2]
+cryptography

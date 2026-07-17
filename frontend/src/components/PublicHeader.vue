@@ -30,7 +30,7 @@ async function logout() {
   <header class="site-header public-header">
     <router-link class="brand-block" to="/">
       <span class="brand-title">TAWEP</span>
-      <span class="brand-subtitle">TOEFL Academic Writing Evaluation Project</span>
+      <span class="brand-subtitle">TOEFL Academic Discussion Evaluation Project</span>
     </router-link>
     <div class="public-header-nav">
       <nav class="nav-links">

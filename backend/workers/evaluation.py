@@ -27,6 +27,7 @@ from backend.models import (
     SessionStatus,
 )
 from backend.services.evaluation import build_debug_report, score_to_30
+from backend.services.ai_provider import ModelCredentials, credentials_for_job
 from backend.services.evaluation_contract import (
     CRITERIA,
     SECTION_ORDER,
@@ -321,6 +322,11 @@ async def load_context(job_id: UUID) -> tuple[EvaluationJob, AnswerSession, Ques
         return row[0], row[1], row[2]
 
 
+async def load_model_credentials(job: EvaluationJob, session: AnswerSession) -> ModelCredentials:
+    async with AsyncSessionLocal() as db:
+        return await credentials_for_job(db, session.user_id, job.api_source, job.ai_config_id)
+
+
 async def heartbeat_loop(job_id: UUID) -> None:
     while True:
         await asyncio.sleep(8)
@@ -434,16 +440,17 @@ async def _run_language_audit(
     answer_text: str,
     locale: str,
     question_context: dict[str, object],
+    credentials: ModelCredentials,
 ) -> list[GrammarIssue]:
     settings = get_settings()
     client = AsyncOpenAI(
-        api_key=settings.deepseek_api_key,
-        base_url=settings.deepseek_base_url,
+        api_key=credentials.api_key,
+        base_url=credentials.endpoint,
         timeout=settings.evaluation_timeout_seconds,
         max_retries=0,
     )
     response = await client.chat.completions.create(
-        model=settings.deepseek_audit_model,
+        model=credentials.audit_model_name,
         messages=[
             {"role": "system", "content": system_prompt},
             {
@@ -470,10 +477,11 @@ async def generate_grammar_audit(
     answer_text: str,
     locale: str,
     question_context: dict[str, object],
+    credentials: ModelCredentials,
 ) -> list[GrammarIssue]:
     mechanics_result, wording_result = await asyncio.gather(
-        _run_language_audit(_grammar_prompt(locale), answer_text, locale, question_context),
-        _run_language_audit(_wording_prompt(locale), answer_text, locale, question_context),
+        _run_language_audit(_grammar_prompt(locale), answer_text, locale, question_context, credentials),
+        _run_language_audit(_wording_prompt(locale), answer_text, locale, question_context, credentials),
         return_exceptions=True,
     )
     if isinstance(mechanics_result, Exception):
@@ -490,6 +498,7 @@ async def generate_grammar_audit(
         answer_text,
         locale,
         verifier_context,
+        credentials,
     )
     issues.extend(verifier_result)
     ranges = sentence_ranges(answer_text)
@@ -651,10 +660,14 @@ async def generate_grammar_audit(
     return [item[0] for item in coalesced]
 
 
-async def generate_deepseek(job_id: UUID, answer_text: str, locale: str, question: Question) -> EvaluationPayload:
+async def generate_deepseek(
+    job_id: UUID,
+    answer_text: str,
+    locale: str,
+    question: Question,
+    credentials: ModelCredentials,
+) -> EvaluationPayload:
     settings = get_settings()
-    if not settings.deepseek_api_key:
-        raise RuntimeError("OPENAI_API_KEY is not configured")
     discussion = [
         {"speaker_role": item.speaker_role, "speaker_name": item.speaker_name, "content": item.content}
         for item in sorted(question.messages, key=lambda item: item.sort_order)
@@ -667,13 +680,13 @@ async def generate_deepseek(job_id: UUID, answer_text: str, locale: str, questio
         "report_locale": locale,
     }
     client = AsyncOpenAI(
-        api_key=settings.deepseek_api_key,
-        base_url=settings.deepseek_base_url,
+        api_key=credentials.api_key,
+        base_url=credentials.endpoint,
         timeout=settings.evaluation_timeout_seconds,
         max_retries=0,
     )
     stream = await client.chat.completions.create(
-        model=settings.deepseek_model,
+        model=credentials.model_name,
         messages=[
             {"role": "system", "content": _prompt(locale)},
             {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)},
@@ -714,7 +727,7 @@ async def generate_deepseek(job_id: UUID, answer_text: str, locale: str, questio
         if name not in published:
             section = validate_section(name, values[name], answer_text, payload.ai_rewrite)
             await publish_section(job_id, name, section)
-    grammar_analysis = await generate_grammar_audit(answer_text, locale, user_payload)
+    grammar_analysis = await generate_grammar_audit(answer_text, locale, user_payload, credentials)
     await publish_section(
         job_id,
         "grammar_analysis",
@@ -723,8 +736,13 @@ async def generate_deepseek(job_id: UUID, answer_text: str, locale: str, questio
     return payload.model_copy(update={"grammar_analysis": grammar_analysis})
 
 
-async def complete_job(job_id: UUID, payload: EvaluationPayload, model_provider: str) -> None:
-    settings = get_settings()
+async def complete_job(
+    job_id: UUID,
+    payload: EvaluationPayload,
+    model_provider: str,
+    model_name: str,
+    audit_model_name: str,
+) -> None:
     scores = payload.scores
     total = calculate_total_score(scores)
     async with AsyncSessionLocal() as db:
@@ -741,12 +759,12 @@ async def complete_job(job_id: UUID, payload: EvaluationPayload, model_provider:
                 report = EvaluationReport(
                     session_id=session.id,
                     model_provider=model_provider,
-                    model_name=settings.deepseek_model if model_provider == "deepseek" else "debug-v1",
+                    model_name=model_name,
                     total_score=total,
                     rewrite_comparison=payload.rewrite_comparison.model_dump(),
                     raw_response={
                         "locale": job.report_locale,
-                        "grammar_audit_model": settings.deepseek_audit_model,
+                        "grammar_audit_model": audit_model_name,
                         "total_score_30": score_to_30(total),
                         "problems": flatten_problems(payload.problems),
                         "problem_evidence": problem_evidence(payload.problems),
@@ -835,13 +853,19 @@ async def fail_or_retry_job(job_id: UUID, error: Exception) -> None:
                     CreditLedger.reason == REFUND_LEDGER_REASON,
                 )
             )
+            original_charge = await db.scalar(
+                select(CreditLedger).where(
+                    CreditLedger.session_id == job.session_id,
+                    CreditLedger.reason == "writing_evaluation",
+                )
+            )
+            refund_amount = -original_charge.delta if original_charge is not None else settings.evaluation_credit_cost
             if wallet is not None and existing_refund is None:
-                wallet.balance += settings.evaluation_credit_cost
-                wallet.weekly_used = max(0, wallet.weekly_used - settings.evaluation_credit_cost)
+                wallet.balance += refund_amount
                 db.add(
                     CreditLedger(
                         user_id=session.user_id,
-                        delta=settings.evaluation_credit_cost,
+                        delta=refund_amount,
                         reason=REFUND_LEDGER_REASON,
                         session_id=job.session_id,
                     )
@@ -864,9 +888,22 @@ async def process_job(job_id: UUID, provider: str) -> None:
     try:
         if provider == "debug":
             payload = await generate_debug(job_id, session.answer_text, job.report_locale)
+            model_provider = "debug"
+            model_name = "debug-v1"
+            audit_model_name = "debug-v1"
         else:
-            payload = await generate_deepseek(job_id, session.answer_text, job.report_locale, question)
-        await complete_job(job_id, payload, provider)
+            credentials = await load_model_credentials(job, session)
+            payload = await generate_deepseek(
+                job_id,
+                session.answer_text,
+                job.report_locale,
+                question,
+                credentials,
+            )
+            model_provider = credentials.provider_name
+            model_name = credentials.model_name
+            audit_model_name = credentials.audit_model_name
+        await complete_job(job_id, payload, model_provider, model_name, audit_model_name)
     finally:
         heartbeat.cancel()
         with suppress(asyncio.CancelledError):

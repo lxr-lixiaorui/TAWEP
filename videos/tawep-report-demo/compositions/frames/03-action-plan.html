@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          container-type: size;
+        }
+
+        .frame03-action-plan-ground {
+          position: absolute;
+          inset: 0;
+          background: #ffffff;
+        }
+
+        .frame03-action-plan-stage {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        .frame03-action-plan-viewport {
+          position: absolute;
+          top: 54px;
+          left: 80px;
+          width: 1760px;
+          height: 836px;
+          overflow: hidden;
+          border: 1.5px solid rgba(0, 109, 111, 0.2);
+          border-radius: 14px;
+          background: #ffffff;
+        }
+
+        .frame03-action-plan-page {
+          position: absolute;
+          top: 0;
+          left: 0;
+          display: block;
+          width: 1760px;
+          height: auto;
+          will-change: transform, opacity;
+          user-select: none;
+        }
+
+        .frame03-action-plan-focus-wash {
+          position: absolute;
+          top: 425px;
+          left: 1007px;
+          width: 192px;
+          height: 58px;
+          border-radius: 10px;
+          background: rgba(0, 109, 111, 0.08);
+          opacity: 0;
+          transform-origin: 50% 50%;
+          pointer-events: none;
+        }
+
+        .frame03-action-plan-marker {
+          position: absolute;
+          top: 425px;
+          left: 1007px;
+          width: 192px;
+          height: 58px;
+          pointer-events: none;
+        }
+
+        .frame03-action-plan-marker-top,
+        .frame03-action-plan-marker-bottom {
+          position: absolute;
+          left: 0;
+          display: block;
+          width: 100%;
+          height: 3px;
+          border-radius: 6px;
+          background: #006d6f;
+          transform-origin: 0 50%;
+        }
+
+        .frame03-action-plan-marker-top {
+          top: 0;
+        }
+
+        .frame03-action-plan-marker-bottom {
+          bottom: 0;
+          transform-origin: 100% 50%;
+        }
+
+        .frame03-action-plan-marker-left,
+        .frame03-action-plan-marker-right {
+          position: absolute;
+          top: 0;
+          display: block;
+          width: 3px;
+          height: 100%;
+          border-radius: 6px;
+          background: #006d6f;
+          transform-origin: 50% 0;
+        }
+
+        .frame03-action-plan-marker-left {
+          left: 0;
+        }
+
+        .frame03-action-plan-marker-right {
+          right: 0;
+          transform-origin: 50% 100%;
+        }
+
+        .frame03-action-plan-progress {
+          position: absolute;
+          top: 892px;
+          left: 0;
+          display: block;
+          width: 60%;
+          height: 3px;
+          background: #006d6f;
+        }
+      </style>
+
+      <div data-hf-id="hf-vlwc" id="root" data-composition-id="03-action-plan" data-duration="3.75" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-izy5" id="frame03-action-plan-ground" class="clip frame03-action-plan-ground" data-start="0" data-duration="3.75" data-track-index="0"></div>
+
+        <div data-hf-id="hf-4e0q" id="frame03-action-plan-stage" class="clip frame03-action-plan-stage" data-start="0" data-duration="3.75" data-track-index="1">
+          <div data-hf-id="hf-dogy" id="frame03-action-plan-viewport" class="frame03-action-plan-viewport">
+            <img data-hf-id="hf-3ncc" data-layout-allow-overflow id="frame03-action-plan-page" class="frame03-action-plan-page" src="capture/assets/report-full.png" alt="" draggable="false">
+          </div>
+
+          <div data-hf-id="hf-urdu" id="frame03-action-plan-focus-wash" class="frame03-action-plan-focus-wash"></div>
+          <div data-hf-id="hf-5c1a" id="frame03-action-plan-marker" class="frame03-action-plan-marker">
+            <span data-hf-id="hf-jk2r" class="frame03-action-plan-marker-top"></span>
+            <span data-hf-id="hf-526k" class="frame03-action-plan-marker-right"></span>
+            <span data-hf-id="hf-harz" class="frame03-action-plan-marker-bottom"></span>
+            <span data-hf-id="hf-yb4x" class="frame03-action-plan-marker-left"></span>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-lb9n" id="frame03-action-plan-progress" class="clip frame03-action-plan-progress" data-start="0" data-duration="3.75" data-track-index="2"></div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+
+        const frame03ActionPlanTimeline = gsap.timeline({ paused: true });
+
+        frame03ActionPlanTimeline.fromTo(
+          "#frame03-action-plan-page",
+          { y: -590, opacity: 0.98 },
+          { y: -600, opacity: 1, duration: 0.42, ease: "power2.out" },
+          0,
+        );
+
+        frame03ActionPlanTimeline.to(
+          "#frame03-action-plan-page",
+          { y: -1000, duration: 1.3, ease: "power3.out" },
+          0.9,
+        );
+
+        frame03ActionPlanTimeline.fromTo(
+          "#frame03-action-plan-focus-wash",
+          { opacity: 0, scale: 0.94 },
+          { opacity: 1, scale: 1, duration: 0.38, ease: "power2.out" },
+          2.2,
+        );
+
+        frame03ActionPlanTimeline.fromTo(
+          ".frame03-action-plan-marker-top, .frame03-action-plan-marker-bottom",
+          { scaleX: 0, opacity: 0 },
+          { scaleX: 1, opacity: 1, duration: 0.32, ease: "power2.out" },
+          2.22,
+        );
+
+        frame03ActionPlanTimeline.fromTo(
+          ".frame03-action-plan-marker-left, .frame03-action-plan-marker-right",
+          { scaleY: 0, opacity: 0 },
+          { scaleY: 1, opacity: 1, duration: 0.28, ease: "power2.out" },
+          2.38,
+        );
+
+        window.__timelines["03-action-plan"] = frame03ActionPlanTimeline;
+      </script>
+    </template>
+  </body>
+</html>

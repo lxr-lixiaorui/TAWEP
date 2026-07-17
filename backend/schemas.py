@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 
@@ -18,6 +18,8 @@ class UserPublic(BaseModel):
     preferred_locale: str
     theme: str
     email_verified_at: datetime | None = None
+    baseline_writing_score: int | None = None
+    planned_exam_date: date | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,6 +35,16 @@ class RegisterRequest(BaseModel):
     alias: str = Field(min_length=1, max_length=80)
     password: str = Field(min_length=10, max_length=128)
     preferred_locale: str = Field(default="en", pattern="^(en|zh)$")
+    baseline_writing_score: int | None = Field(default=None, ge=0, le=30)
+    planned_exam_date: date | None = None
+    terms_accepted: Literal[True]
+    terms_version: str = Field(min_length=1, max_length=40)
+    privacy_accepted: Literal[True]
+    privacy_version: str = Field(min_length=1, max_length=40)
+    cross_border_accepted: bool = False
+    cross_border_version: str | None = Field(default=None, min_length=1, max_length=40)
+    model_improvement_accepted: bool = False
+    model_improvement_version: str = Field(min_length=1, max_length=40)
 
 
 class EmailRequest(BaseModel):
@@ -62,12 +74,28 @@ class UserUpdate(BaseModel):
     theme: str | None = Field(default=None, pattern="^(light|dark|system)$")
 
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=10, max_length=128)
+
+
+class AccountDeleteRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    confirm_email: EmailStr
+
+
 class UsageSummary(BaseModel):
     balance: int
-    weekly_limit: int
-    weekly_used: int
+    weekly_limit: int = 0
+    weekly_used: int = 0
     total_planned_credit: int
-    next_reset_at: datetime
+    next_reset_at: datetime | None = None
+    evaluation_cost: int
+    can_start_evaluation: bool
+    unavailable_reason: str | None = None
+    personal_api_enabled: bool = False
+    exam_discount_active: bool = False
+    planned_exam_date: date | None = None
 
 
 class TopicOut(BaseModel):
@@ -96,6 +124,31 @@ class QuestionOut(BaseModel):
     messages: list[QuestionMessageOut] = Field(default_factory=list)
 
 
+class QuestionBankStats(BaseModel):
+    question_count: int
+    topic_count: int
+
+
+class QuestionSkillProfileOut(BaseModel):
+    question_no: int
+    constraint_density: int
+    scope_width: int
+    perspective_gap: int
+    position_relation: str
+    reasoning_modes: list[str]
+    stakeholder_count: int
+    argument_steps: int
+    abstractness: int
+    knowledge_load: int
+    lexical_load: int
+    content_opportunity: float
+    perspective_opportunity: float
+    structure_opportunity: float
+    annotation_source: str
+    confidence: float
+    profile_version: str
+
+
 class QuestionCreate(BaseModel):
     topic: str = Field(min_length=1, max_length=120)
     exam_type: str = Field(default="classic", pattern="^(classic|reform_2026)$")
@@ -106,6 +159,87 @@ class QuestionCreate(BaseModel):
     student_b_content: str = Field(min_length=10, max_length=5000)
     professor_name: str = Field(min_length=1, max_length=120)
     professor_content: str = Field(min_length=20, max_length=5000)
+
+
+class QuestionUploadCreate(QuestionCreate):
+    rights_confirmed: Literal[True]
+    rights_statement_version: str = Field(min_length=1, max_length=40)
+
+
+class LegalDocumentSummaryOut(BaseModel):
+    slug: str
+    title: str
+    summary: str
+    version: str
+
+
+class LegalSectionOut(BaseModel):
+    heading: str
+    paragraphs: list[str] = Field(default_factory=list)
+    bullets: list[str] = Field(default_factory=list)
+
+
+class LegalDocumentOut(LegalDocumentSummaryOut):
+    updated_at: str
+    sections: list[LegalSectionOut]
+
+
+class CrossBorderConfigOut(BaseModel):
+    visible: bool
+    consent_version: str | None = None
+    activation: int = 0
+    updated_at: datetime | None = None
+
+
+class CrossBorderConfigUpdate(BaseModel):
+    visible: bool
+
+
+class RequiredCrossBorderConsentOut(BaseModel):
+    visible: bool
+    required: bool
+    consent_version: str | None = None
+    title: str | None = None
+    summary: str | None = None
+
+
+class RequiredConsentsOut(BaseModel):
+    cross_border: RequiredCrossBorderConsentOut
+
+
+class CrossBorderConsentCreate(BaseModel):
+    accepted: Literal[True]
+    version: str = Field(min_length=1, max_length=40)
+
+
+class ConsentStatusOut(BaseModel):
+    model_improvement: bool
+    version: str
+
+
+class ConsentUpdate(BaseModel):
+    granted: bool
+    version: str = Field(min_length=1, max_length=40)
+
+
+class AIConfigOut(BaseModel):
+    enabled: bool
+    provider_name: str
+    endpoint: str
+    model_name: str
+    key_configured: bool
+    key_hint: str | None = None
+    consent_version: str | None = None
+
+
+class AIConfigUpdate(BaseModel):
+    enabled: bool
+    provider_name: str = Field(default="OpenAI-compatible", min_length=2, max_length=80)
+    endpoint: str = Field(min_length=8, max_length=500)
+    model_name: str = Field(min_length=1, max_length=160)
+    api_key: str | None = Field(default=None, min_length=8, max_length=1000)
+    third_party_ai_accepted: Literal[True]
+    third_party_ai_version: str = Field(min_length=1, max_length=40)
 
 
 class QuestionSubmissionOut(BaseModel):
@@ -158,6 +292,12 @@ class ReportOut(BaseModel):
     report_html_url: str | None = None
 
 
+class ReportShareOut(BaseModel):
+    token: str
+    path: str
+    created_at: datetime
+
+
 class ReportFeedbackCreate(BaseModel):
     feedback_type: str = Field(pattern="^(too_high|too_low|other)$")
     comment: str | None = Field(default=None, max_length=4000)
@@ -200,12 +340,65 @@ class GrammarItemOut(BaseModel):
     suggestion: str
 
 
+class PublicReportOut(BaseModel):
+    session: SessionOut
+    question: QuestionOut
+    report: ReportOut
+    grammar: list[GrammarItemOut]
+    owner_alias: str
+    generated_at: datetime
+
+
 class InboxMessageOut(BaseModel):
     id: UUID
     title: str
     body: str
     type: str
+    action_url: str | None = None
+    action_label: str | None = None
     read_at: datetime | None
+    created_at: datetime
+
+
+class ExamReminderOut(BaseModel):
+    show: bool
+    exam_date: date | None = None
+
+
+class ExamReminderAcknowledge(BaseModel):
+    locale: str = Field(default="en", pattern="^(en|zh)$")
+
+
+class ExamResultCreate(BaseModel):
+    exam_date: date
+    writing_score: int = Field(ge=0, le=30)
+    baseline_writing_score: int | None = Field(default=None, ge=0, le=30)
+
+
+class ExamResultOut(BaseModel):
+    id: UUID
+    exam_date: date
+    writing_score: int
+    baseline_writing_score: int | None = None
+    improvement: int | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ExamOutcomeContext(BaseModel):
+    baseline_writing_score: int | None = None
+    planned_exam_date: date | None = None
+    latest_result: ExamResultOut | None = None
+
+
+class CreditLedgerOut(BaseModel):
+    id: UUID
+    delta: int
+    reason: str
+    session_id: UUID | None = None
+    question_id: UUID | None = None
     created_at: datetime
 
 
@@ -214,6 +407,7 @@ class DashboardSummary(BaseModel):
     user_id: UUID
     average_score: float
     practice_count: int
+    weekly_practice_count: int
     credit: UsageSummary
 
 
@@ -221,7 +415,11 @@ class RecommendationOut(BaseModel):
     question_no: int
     summary: str
     topic: str
+    exam_type: str
+    difficulty: str
     reason: str
+    focus_dimension: str
+    match_score: float
 
 
 class BreakdownPoint(BaseModel):
@@ -345,3 +543,15 @@ class AdminReportFeedbackOut(BaseModel):
     report_snapshot: dict
     total_score: float
     created_at: datetime
+
+
+class AdminExamResultOut(BaseModel):
+    id: UUID
+    user_id: UUID
+    user_alias: str
+    user_email: EmailStr
+    baseline_writing_score: int | None = None
+    writing_score: int
+    improvement: int | None = None
+    exam_date: date
+    submitted_at: datetime

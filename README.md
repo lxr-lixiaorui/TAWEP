@@ -1,6 +1,6 @@
 # TAWEP
 
-**TAWEP** (TOEFL Academic Writing Evaluation Project) is being rebuilt from the original Flask prototype into a platform-style TOEFL Academic Discussion writing evaluation website.
+**TAWEP** (TOEFL Academic Discussion Evaluation Project) is being rebuilt from the original Flask prototype into a platform-style TOEFL Academic Discussion writing evaluation website.
 
 The current structure is:
 
@@ -52,9 +52,16 @@ python -m backend.db.migrate_auth
 python -m backend.db.migrate_admin_accounts
 python -m backend.db.migrate_question_moderation
 python -m backend.db.migrate_report_feedback
+python -m backend.db.migrate_legal_byok
+python -m backend.db.migrate_report_shares
+python -m backend.db.migrate_credit_history
+python -m backend.db.migrate_question_skill_profiles
+python -m backend.db.migrate_exam_outcomes
+python -m backend.db.migrate_platform_settings
+python -m backend.db.annotate_question_skill_profiles
 ```
 
-The schema includes users, topics, questions, uploaded-question review, answer sessions, evaluation reports, grammar analysis, language metrics, credit wallets, credit ledger, inbox messages, legal documents, and admin audit logs.
+The schema includes users, topics, questions, uploaded-question review, answer sessions, evaluation reports, grammar analysis, language metrics, credit wallets, credit ledger, inbox messages, exam outcome records, legal documents, and admin audit logs.
 
 ## Run
 
@@ -102,6 +109,7 @@ Frontend routes include:
 - `/examplereport`
 - `/settings`
 - `/inbox`
+- `/score-report`
 - `/agreements`
 - `/creditexplanation`
 - `/login`
@@ -111,20 +119,27 @@ Frontend routes include:
 - `/manage/questionbank`
 - `/manage/reviewquestion`
 - `/manage/feedback`
+- `/manage/outcomes`
 - `/manage/accounts`
+- `/manage/settings`
 
 Backend API routes are under `/api/v1`.
 
 ## Credit Rules
 
-- Initial account credit: `180`
-- Weekly rolling usage limit: `60`
+- Initial account credit: `45`
+- Weekly usage limit: none
 - One AI evaluation: `3` credits
+- Evaluations cost `2` credits when the user's planned exam is `0–7` days away, including exam day.
 - If credit is insufficient, submit returns HTTP `402` with an `INSUFFICIENT_CREDIT` style error payload.
 
 ## Account And Email Development
 
 Accounts use Argon2 password hashing, short-lived JWT access tokens, rotating refresh tokens in an HttpOnly cookie, and single-use email verification/password-reset tokens. Configure a random `AUTH_SECRET_KEY` in `.env` before starting the backend.
+
+Authenticated users can change their password or permanently delete their account from Settings. A password change revokes every active login session. Self-service account deletion requires the current password and an exact email confirmation, then removes account-owned sessions, reports, credits, inbox messages, consent records, and personal API credentials through PostgreSQL cascades. Published user-created questions remain available with their creator reference cleared. Administrator accounts must be removed by another administrator.
+
+The standalone cross-border notice is controlled from `/manage/settings` and is hidden by default. Each transition from hidden to visible creates a new activation version, so every user must explicitly accept that version before continuing. User-reported official Writing outcomes are available to administrators at `/manage/outcomes` for future aggregate improvement analysis.
 
 Until a mail provider and public domain are configured, account email is written to the PostgreSQL `email_outbox` table. Inspect the latest local verification or reset link with:
 
@@ -133,6 +148,14 @@ python -m backend.db.show_email_outbox user@example.com
 ```
 
 Keep `EMAIL_DELIVERY_MODE=outbox` during local development. The email transport can later consume the same outbox records without changing the authentication endpoints.
+
+Personal OpenAI-compatible API keys are encrypted before database storage. Generate a separate Fernet key before production deployment:
+
+```powershell
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Set the result as `BYOK_ENCRYPTION_KEY`. Development derives a local key from `AUTH_SECRET_KEY` when this value is omitted; production refuses to start without an explicit key.
 
 ## Administrator Accounts
 

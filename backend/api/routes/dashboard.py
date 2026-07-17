@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +17,7 @@ from backend.models import (
 )
 from backend.schemas import BreakdownPoint, DashboardSummary, MatrixRow, RecommendationOut
 from backend.services.practice import get_usage
+from backend.services.recommendations import recommend_questions
 
 
 router = APIRouter()
@@ -33,31 +36,33 @@ async def summary(
             .where(AnswerSession.user_id == user.id)
         )
     ).one()
+    weekly_practice_count = int(
+        await db.scalar(
+            select(func.count(EvaluationReport.id))
+            .join(AnswerSession, AnswerSession.id == EvaluationReport.session_id)
+            .where(
+                AnswerSession.user_id == user.id,
+                EvaluationReport.created_at >= datetime.now(timezone.utc) - timedelta(days=7),
+            )
+        )
+        or 0
+    )
     return DashboardSummary(
         alias=user.alias,
         user_id=user.id,
         average_score=float(average_score),
         practice_count=int(practice_count),
+        weekly_practice_count=weekly_practice_count,
         credit=credit,
     )
 
 
 @router.get("/recommendations", response_model=list[RecommendationOut])
-async def recommendations(user: User = Depends(get_current_user)) -> list[RecommendationOut]:
-    return [
-        RecommendationOut(
-            question_no=24,
-            summary="Should governments support public transportation with tax revenue?",
-            topic="Policy",
-            reason="Logical Structure is a useful next focus for this prompt.",
-        ),
-        RecommendationOut(
-            question_no=17,
-            summary="What is the biggest mistake people make when buying tech products?",
-            topic="Technology",
-            reason="This prompt rewards clear perspective expansion.",
-        ),
-    ]
+async def recommendations(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[RecommendationOut]:
+    return await recommend_questions(db, user.id, limit=2, locale=user.preferred_locale)
 
 
 @router.get("/records")

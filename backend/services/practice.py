@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -9,6 +10,7 @@ from backend.core.config import get_settings
 from backend.core.constants import DEMO_USER_EMAIL, DEMO_USER_ID
 from backend.models import (
     AnswerSession,
+    CreditLedger,
     CreditWallet,
     EvaluationReport,
     GrammarAnalysisItem,
@@ -20,6 +22,7 @@ from backend.models import (
     User,
     UserRole,
     UserStatus,
+    UserAIConfig,
 )
 from backend.schemas import GrammarItemOut, ReportOut, ScoreComponentsOut, SessionOut, UsageSummary
 from backend.services.evaluation import score_to_30
@@ -59,50 +62,84 @@ async def ensure_demo_account(db: AsyncSession) -> None:
             set_={"email": DEMO_USER_EMAIL},
         )
     )
-    await db.execute(
+    created_user_id = await db.scalar(
         insert(CreditWallet)
         .values(
             user_id=DEMO_USER_ID,
             balance=settings.initial_credit,
-            weekly_limit=settings.weekly_credit_limit,
+            weekly_limit=0,
             weekly_used=0,
             weekly_window_start=_now(),
             total_planned_credit=settings.initial_credit,
         )
         .on_conflict_do_nothing(index_elements=[CreditWallet.user_id])
+        .returning(CreditWallet.user_id)
     )
+    if created_user_id is not None:
+        db.add(
+            CreditLedger(
+                user_id=DEMO_USER_ID,
+                delta=settings.initial_credit,
+                reason="initial_credit",
+            )
+        )
 
 
-def _reset_weekly_window(wallet: CreditWallet) -> None:
-    if _now() >= wallet.weekly_window_start + timedelta(days=7):
-        wallet.weekly_used = 0
-        wallet.weekly_window_start = _now()
+def evaluation_credit_cost_for_user(user: User, *, today: date | None = None) -> int:
+    settings = get_settings()
+    current_date = today or datetime.now(ZoneInfo("Asia/Hong_Kong")).date()
+    days_until_exam = (
+        (user.planned_exam_date - current_date).days
+        if user.planned_exam_date is not None
+        else None
+    )
+    if days_until_exam is not None and 0 <= days_until_exam <= 7:
+        return 2
+    return settings.evaluation_credit_cost
 
 
-def _usage_out(wallet: CreditWallet) -> UsageSummary:
+def _usage_out(wallet: CreditWallet, user: User, personal_api_enabled: bool = False) -> UsageSummary:
+    settings = get_settings()
+    cost = evaluation_credit_cost_for_user(user)
+    balance_ok = wallet.balance >= cost
     return UsageSummary(
         balance=wallet.balance,
-        weekly_limit=wallet.weekly_limit,
-        weekly_used=wallet.weekly_used,
+        weekly_limit=0,
+        weekly_used=0,
         total_planned_credit=wallet.total_planned_credit,
-        next_reset_at=wallet.weekly_window_start + timedelta(days=7),
+        next_reset_at=None,
+        evaluation_cost=cost,
+        can_start_evaluation=balance_ok,
+        unavailable_reason=None if balance_ok else "balance",
+        personal_api_enabled=personal_api_enabled,
+        exam_discount_active=cost == 2 and settings.evaluation_credit_cost != 2,
+        planned_exam_date=user.planned_exam_date,
     )
 
 
 async def ensure_user_wallet(db: AsyncSession, user_id: UUID) -> None:
     settings = get_settings()
-    await db.execute(
+    created_user_id = await db.scalar(
         insert(CreditWallet)
         .values(
             user_id=user_id,
             balance=settings.initial_credit,
-            weekly_limit=settings.weekly_credit_limit,
+            weekly_limit=0,
             weekly_used=0,
             weekly_window_start=_now(),
             total_planned_credit=settings.initial_credit,
         )
         .on_conflict_do_nothing(index_elements=[CreditWallet.user_id])
+        .returning(CreditWallet.user_id)
     )
+    if created_user_id is not None:
+        db.add(
+            CreditLedger(
+                user_id=user_id,
+                delta=settings.initial_credit,
+                reason="initial_credit",
+            )
+        )
 
 
 async def get_usage(db: AsyncSession, user_id: UUID) -> UsageSummary:
@@ -113,8 +150,18 @@ async def get_usage(db: AsyncSession, user_id: UUID) -> UsageSummary:
         )
         if wallet is None:
             raise RuntimeError("Credit wallet could not be created")
-        _reset_weekly_window(wallet)
-        return _usage_out(wallet)
+        user = await db.get(User, user_id)
+        if user is None:
+            raise RuntimeError("User could not be loaded")
+        personal_api_enabled = bool(
+            await db.scalar(
+                select(UserAIConfig.enabled).where(
+                    UserAIConfig.user_id == user_id,
+                    UserAIConfig.enabled.is_(True),
+                )
+            )
+        )
+        return _usage_out(wallet, user, personal_api_enabled)
 
 
 def _session_out(session: AnswerSession, question_no: int) -> SessionOut:
@@ -141,6 +188,16 @@ def _session_statement(session_id: UUID, user_id: UUID):
 async def create_session(db: AsyncSession, user_id: UUID, question_no: int, mode: str) -> SessionOut | None:
     async with db.begin():
         await ensure_user_wallet(db, user_id)
+        wallet = await db.scalar(
+            select(CreditWallet).where(CreditWallet.user_id == user_id).with_for_update()
+        )
+        if wallet is None:
+            raise RuntimeError("Credit wallet could not be created")
+        user = await db.get(User, user_id)
+        if user is None:
+            raise RuntimeError("User could not be loaded")
+        if not _usage_out(wallet, user).can_start_evaluation:
+            raise InsufficientCreditError
         question = await db.scalar(
             select(Question).where(
                 Question.question_no == question_no,

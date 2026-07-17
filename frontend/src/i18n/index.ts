@@ -41,12 +41,12 @@ const messages = {
       save: 'Save'
     },
     home: {
-      offer: '96 official prompts · free to start',
+      offer: '{count} prompts · free to start',
       title: 'Free TOEFL Academic Discussion practice.',
       lead: 'Write one focused response and get a prioritized report: calibrated scores, precise language flags, actionable revisions, and an AI Rewrite you can compare with your own reasoning.',
       start: 'Start a 10-minute practice',
-      example: 'Explore a complete report',
-      noCard: 'No credit card · choose any prompt · multilingual reports',
+      example: 'Explore an example report',
+      noCard: 'Choose any prompt · multilingual reports',
       stats: {
         prompts: 'official prompts ready to practice',
         topics: 'automatically classified topic groups',
@@ -83,7 +83,7 @@ const messages = {
       bank: {
         overline: 'Full question bank',
         title: 'Drill a weak topic instead of scrolling at random.',
-        body: 'All 96 current prompts are classified into nine practical topic groups. Classic and 2026 Reform prompts remain clearly identified.',
+        body: 'All {count} current prompts are classified into {topics} practical topic groups. Classic and 2026 Reform prompts remain clearly identified.',
         browse: 'Browse all prompts'
       },
       final: {
@@ -97,6 +97,7 @@ const messages = {
       title: 'Find your next 10-minute prompt.',
       subtitle: 'Start from a focused recommendation or filter the full Academic Discussion bank.',
       upload: 'Upload your own',
+      uploadReward: 'Once accepted, you’ll immediately receive 60 credits.',
       recommended: 'Recommended starting point',
       recommendedReason: 'A focused prompt selected from the current filters.',
       minutes: 'About 10 minutes',
@@ -208,6 +209,20 @@ const messages = {
       noAnswer: 'No answer text was submitted.',
       downloadReport: 'Download HTML Report',
       downloadWaiting: 'Download becomes available when evaluation is complete.',
+      share: {
+        title: 'Share this report',
+        body: 'Create a public, read-only link to the answer, report, grammar analysis, and AI Rewrite.',
+        generate: 'Generate share link',
+        generating: 'Generating...',
+        generated: 'Share link generated',
+        failed: 'Unable to generate a share link',
+        urlLabel: 'Public report link',
+        copy: 'Copy link',
+        copied: 'Copied',
+        copyFailed: 'Copy failed. Select the link and copy it manually.',
+        notice: 'Anyone with this link can read the shared writing and report without signing in. Generating a new link disables the previous one.',
+        attribution: '{alias} generated this report on {time}'
+      },
       feedback: {
         title: 'Does this report feel accurate?',
         body: 'Tell us when the score or feedback does not match your response.',
@@ -316,12 +331,12 @@ const messages = {
       save: '保存'
     },
     home: {
-      offer: '96 道官方题目 · 免费开始',
+      offer: '{count} 道题目 · 免费开始',
       title: '免费的 TOEFL 学术讨论写作练习。',
       lead: '完成一篇针对性写作，获得有明确优先级的报告：校准评分、精准语言标记、可执行建议，以及能与原文对照的 AI 改写。',
       start: '开始 10 分钟练习',
-      example: '查看完整报告',
-      noCard: '无需银行卡 · 任意选题 · 支持多语言报告',
+      example: '查看示例报告',
+      noCard: '任意选题 · 支持多语言报告',
       stats: {
         prompts: '道可直接练习的官方题目',
         topics: '个自动分类的话题组',
@@ -358,7 +373,7 @@ const messages = {
       bank: {
         overline: '完整题库',
         title: '针对弱项话题训练，而不是随机滚动查找。',
-        body: '当前 96 道题被归入九个实用话题组，并清楚区分经典题和 2026 改革题。',
+        body: '当前 {count} 道题被归入 {topics} 个实用话题组，并清楚区分经典题和 2026 改革题。',
         browse: '浏览全部题目'
       },
       final: {
@@ -372,6 +387,7 @@ const messages = {
       title: '找到下一道 10 分钟练习题。',
       subtitle: '从针对性推荐开始，或者筛选完整的学术讨论题库。',
       upload: '上传自己的题目',
+      uploadReward: '题目审核通过后，你将立即获得 60 credits。',
       recommended: '推荐起点',
       recommendedReason: '根据当前筛选条件选出的一道针对性题目。',
       minutes: '约 10 分钟',
@@ -483,6 +499,20 @@ const messages = {
       noAnswer: '没有提交回答。',
       downloadReport: '下载 HTML 报告',
       downloadWaiting: '评估完成后即可下载。',
+      share: {
+        title: '分享这份报告',
+        body: '生成公开只读链接，访客无需登录即可查看答题页、报告、语法分析和 AI Rewrite。',
+        generate: '生成分享链接',
+        generating: '正在生成...',
+        generated: '分享链接已生成',
+        failed: '暂时无法生成分享链接',
+        urlLabel: '公开报告链接',
+        copy: '复制链接',
+        copied: '已复制',
+        copyFailed: '复制失败，请选中链接后手动复制。',
+        notice: '任何获得链接的人都能在无需登录的情况下查看文章和报告。重新生成链接后，旧链接将立即失效。',
+        attribution: '{alias} 用户于 {time} 生成'
+      },
       feedback: {
         title: '你觉得这份报告准确吗？',
         body: '如果分数或分析与实际回答不符，请告诉我们。',

@@ -1,0 +1,1920 @@
+[
+  {
+    "question_no": 1,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 5,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "independent",
+    "reasoning_modes": [
+      "evaluation",
+      "compare"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.94,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 2,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "independent",
+    "reasoning_modes": [
+      "policy",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.0,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 3,
+    "constraint_density": 2,
+    "scope_width": 5,
+    "perspective_gap": 5,
+    "stakeholder_count": 1,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "independent",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 1.62,
+    "perspective_opportunity": 3.72,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 4,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 5,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 3,
+    "knowledge_load": 2,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "policy",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 3.3
+  },
+  {
+    "question_no": 6,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 3,
+    "knowledge_load": 2,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "policy",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 3.3
+  },
+  {
+    "question_no": 7,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "independent",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.36,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 8,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation",
+      "compare"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 9,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 10,
+    "constraint_density": 3,
+    "scope_width": 2,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "evaluation",
+      "causal"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 3.38,
+    "perspective_opportunity": 3.56,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 11,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 12,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 5,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 4.34,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 13,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 14,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 5,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 4.56,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 15,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "causal"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 16,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "evaluation",
+      "causal"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.78,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 17,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.68,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 18,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 19,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "policy",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 20,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "compare"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 21,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "evaluation",
+      "compare"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.46,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 22,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "evaluation",
+      "policy"
+    ],
+    "confidence": 0.8,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.78,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 23,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 24,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 2,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 25,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 26,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 2,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 27,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 4,
+    "argument_steps": 3,
+    "abstractness": 3,
+    "knowledge_load": 2,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 4.2,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 28,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "similar",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.16,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 29,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.7
+  },
+  {
+    "question_no": 30,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 31,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 4,
+    "argument_steps": 3,
+    "abstractness": 3,
+    "knowledge_load": 2,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "policy"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 4.2,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 32,
+    "constraint_density": 2,
+    "scope_width": 5,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 3,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "prediction"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 1.62,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 33,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 3,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "problem_solving"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 34,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 35,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "compare"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 36,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 3,
+    "knowledge_load": 2,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "policy",
+      "tradeoff"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.8
+  },
+  {
+    "question_no": 37,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 2,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "example_application"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 38,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 39,
+    "constraint_density": 2,
+    "scope_width": 5,
+    "perspective_gap": 5,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "problem_solving",
+      "example_application"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 1.62,
+    "perspective_opportunity": 4.04,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 40,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 41,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 42,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 4,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "policy",
+      "problem_solving"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.9,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 43,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 2.8
+  },
+  {
+    "question_no": 44,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "policy",
+      "problem_solving"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.2,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 45,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "evaluation",
+      "example_application"
+    ],
+    "confidence": 0.8,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.68,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 46,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.2,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 47,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 2.8
+  },
+  {
+    "question_no": 48,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "similar",
+    "reasoning_modes": [
+      "evaluation",
+      "example_application"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 2.58,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 49,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 50,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "policy",
+      "problem_solving"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.56,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 51,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 52,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 3,
+    "knowledge_load": 2,
+    "lexical_load": 3,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 53,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 54,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "problem_solving",
+      "policy"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.68,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 55,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 56,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 3,
+    "knowledge_load": 2,
+    "lexical_load": 3,
+    "position_relation": "independent",
+    "reasoning_modes": [
+      "problem_solving"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.36,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 57,
+    "constraint_density": 3,
+    "scope_width": 2,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 3.38,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 58,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 59,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.88,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 60,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.87,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 61,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "prediction",
+      "evaluation"
+    ],
+    "confidence": 0.86,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.7
+  },
+  {
+    "question_no": 62,
+    "constraint_density": 4,
+    "scope_width": 2,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 4.0,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 3.2
+  },
+  {
+    "question_no": 63,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 64,
+    "constraint_density": 4,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "policy",
+      "problem_solving"
+    ],
+    "confidence": 0.88,
+    "content_opportunity": 3.62,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.2
+  },
+  {
+    "question_no": 65,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.7
+  },
+  {
+    "question_no": 66,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.2,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 67,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 68,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "compare",
+      "problem_solving"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.46,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 69,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.7
+  },
+  {
+    "question_no": 70,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.7
+  },
+  {
+    "question_no": 71,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 72,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 73,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.86,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 74,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "policy"
+    ],
+    "confidence": 0.88,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 2.8
+  },
+  {
+    "question_no": 75,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "example_application"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 76,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "prediction",
+      "evaluation"
+    ],
+    "confidence": 0.87,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 77,
+    "constraint_density": 1,
+    "scope_width": 5,
+    "perspective_gap": 5,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.84,
+    "content_opportunity": 1,
+    "perspective_opportunity": 4.14,
+    "structure_opportunity": 1.8
+  },
+  {
+    "question_no": 78,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.88,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 79,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 3,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.86,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.8
+  },
+  {
+    "question_no": 80,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation",
+      "policy"
+    ],
+    "confidence": 0.87,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 3.1
+  },
+  {
+    "question_no": 81,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "complementary",
+    "reasoning_modes": [
+      "evaluation",
+      "problem_solving"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.46,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 82,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 83,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 84,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "tradeoff",
+      "policy"
+    ],
+    "confidence": 0.92,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 85,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 3,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "tradeoff"
+    ],
+    "confidence": 0.93,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 86,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation",
+      "policy"
+    ],
+    "confidence": 0.94,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 87,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "compare",
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.2
+  },
+  {
+    "question_no": 88,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 1,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "evaluation",
+      "policy"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.56,
+    "structure_opportunity": 2.5
+  },
+  {
+    "question_no": 89,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 90,
+    "constraint_density": 2,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.95,
+    "content_opportunity": 2.38,
+    "perspective_opportunity": 3.18,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 91,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 2,
+    "argument_steps": 2,
+    "abstractness": 3,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.76,
+    "structure_opportunity": 2.0
+  },
+  {
+    "question_no": 92,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 2,
+    "lexical_load": 1,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "policy",
+      "problem_solving"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.78,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 93,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 2,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.3
+  },
+  {
+    "question_no": 94,
+    "constraint_density": 3,
+    "scope_width": 3,
+    "perspective_gap": 3,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 3.0,
+    "perspective_opportunity": 3.4,
+    "structure_opportunity": 3.0
+  },
+  {
+    "question_no": 95,
+    "constraint_density": 2,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 2,
+    "position_relation": "opposed",
+    "reasoning_modes": [
+      "tradeoff",
+      "evaluation"
+    ],
+    "confidence": 0.85,
+    "content_opportunity": 2.0,
+    "perspective_opportunity": 3.98,
+    "structure_opportunity": 2.8
+  },
+  {
+    "question_no": 96,
+    "constraint_density": 3,
+    "scope_width": 4,
+    "perspective_gap": 4,
+    "stakeholder_count": 3,
+    "argument_steps": 3,
+    "abstractness": 2,
+    "knowledge_load": 1,
+    "lexical_load": 1,
+    "position_relation": "partially_overlapping",
+    "reasoning_modes": [
+      "tradeoff",
+      "prioritization"
+    ],
+    "confidence": 0.9,
+    "content_opportunity": 2.62,
+    "perspective_opportunity": 3.78,
+    "structure_opportunity": 3.0
+  }
+]

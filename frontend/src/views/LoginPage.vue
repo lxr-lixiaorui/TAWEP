@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ArrowRight, KeyRound, Mail, UserPlus } from '@lucide/vue'
 import { useRoute, useRouter } from 'vue-router'
 import PublicHeader from '../components/PublicHeader.vue'
-import { ApiError, apiPost } from '../api/client'
+import { ApiError, apiGet, apiPost } from '../api/client'
 import { useAppStore } from '../stores/app'
 import { useAuthStore } from '../stores/auth'
 
@@ -18,7 +18,18 @@ const loading = ref(false)
 const error = ref('')
 const notice = ref('')
 const canResend = ref(false)
-const form = reactive({ email: '', alias: '', password: '', confirmPassword: '' })
+const crossBorderVisible = ref(false)
+const crossBorderVersion = ref<string | null>(null)
+const form = reactive({
+  email: '', alias: '', password: '', confirmPassword: '',
+  baselineWritingScore: '' as '' | number, plannedExamDate: '',
+  coreAgreementsAccepted: false, crossBorderAccepted: false, modelImprovementAccepted: false
+})
+const today = new Date()
+const minimumExamDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+const legalVersions = {
+  terms: '2026-07-16', privacy: '2026-07-15', modelImprovement: '2026-07-15'
+}
 
 const copy = computed(() => app.locale === 'zh' ? {
   overline: '账户', title: '继续你的写作练习', body: '登录后，答题记录、报告和积分会保存到你的账户。',
@@ -27,7 +38,13 @@ const copy = computed(() => app.locale === 'zh' ? {
   forgotLink: '忘记密码？', back: '返回登录', passwordHint: '至少 10 个字符', mismatch: '两次输入的密码不一致。',
   registered: '验证邮件已进入发送队列，请通过邮件中的链接激活账户。',
   resetQueued: '如果账户存在，密码重置邮件已进入发送队列。', resend: '重新发送验证邮件',
-  securityPassword: 'Argon2 密码哈希', securityEmail: '邮箱验证'
+  securityPassword: 'Argon2 密码哈希', securityEmail: '邮箱验证',
+  currentScore: '当前 TOEFL 写作分数（可选）', currentScoreHint: '0–30 分，用于之后计算真实提分。',
+  examDate: '计划考试日期（可选）', examDateHint: '距离考试还有 0–7 天时，每次评分只消耗 2 credits；考试当天登录还会收到提醒。',
+  acceptCorePrefix: '我已阅读并同意', acceptTerms: '《TAWEP 用户服务协议》', acceptCoreJoin: '和', acceptPrivacy: '《TAWEP 隐私政策》', acceptCoreSuffix: '，包括其中的未成年人使用规则。',
+  acceptCrossBorder: '我单独同意将相关个人信息传输至香港服务器并进行存储和处理。',
+  improveModel: '可选：我同意平台使用去标识化后的文章和报告改进评分模型。',
+  consentRequired: '请先同意用户协议和隐私政策。', crossBorderRequired: '请先同意当前跨境处理告知。'
 } : {
   overline: 'Account', title: 'Continue your writing practice', body: 'Sign in to keep sessions, reports, and credits attached to your account.',
   login: 'Sign in', register: 'Register', forgot: 'Reset password', email: 'Email', alias: 'Display name', password: 'Password',
@@ -35,7 +52,13 @@ const copy = computed(() => app.locale === 'zh' ? {
   forgotLink: 'Forgot password?', back: 'Back to sign in', passwordHint: 'At least 10 characters', mismatch: 'Passwords do not match.',
   registered: 'The verification email is queued. Use its link to activate your account.',
   resetQueued: 'If the account exists, a password reset email is queued.', resend: 'Resend verification email',
-  securityPassword: 'Argon2 password hashing', securityEmail: 'Email verification'
+  securityPassword: 'Argon2 password hashing', securityEmail: 'Email verification',
+  currentScore: 'Current TOEFL Writing score (optional)', currentScoreHint: '0–30; used later to calculate your verified improvement.',
+  examDate: 'Planned exam date (optional)', examDateHint: 'When your exam is 0–7 days away, each evaluation costs only 2 credits. You will also receive an exam-day reminder.',
+  acceptCorePrefix: 'I have read and agree to the', acceptTerms: 'TAWEP User Service Agreement', acceptCoreJoin: 'and', acceptPrivacy: 'TAWEP Privacy Policy', acceptCoreSuffix: ', including the rules for minors.',
+  acceptCrossBorder: 'I separately consent to transmission, storage, and processing on servers in Hong Kong.',
+  improveModel: 'Optional: I allow de-identified writing and reports to improve the evaluation model.',
+  consentRequired: 'Agree to the user agreement and privacy policy first.', crossBorderRequired: 'Agree to the current cross-border notice first.'
 })
 
 function selectMode(next: Mode) {
@@ -66,6 +89,14 @@ async function submit() {
     error.value = copy.value.mismatch
     return
   }
+  if (mode.value === 'register' && !form.coreAgreementsAccepted) {
+    error.value = copy.value.consentRequired
+    return
+  }
+  if (mode.value === 'register' && crossBorderVisible.value && !form.crossBorderAccepted) {
+    error.value = copy.value.crossBorderRequired
+    return
+  }
   loading.value = true
   try {
     if (mode.value === 'login') {
@@ -79,7 +110,17 @@ async function submit() {
         email: form.email,
         alias: form.alias,
         password: form.password,
-        preferred_locale: app.locale
+        preferred_locale: app.locale,
+        baseline_writing_score: form.baselineWritingScore === '' ? null : Number(form.baselineWritingScore),
+        planned_exam_date: form.plannedExamDate || null,
+        terms_accepted: true,
+        terms_version: legalVersions.terms,
+        privacy_accepted: true,
+        privacy_version: legalVersions.privacy,
+        cross_border_accepted: crossBorderVisible.value && form.crossBorderAccepted,
+        cross_border_version: crossBorderVisible.value ? crossBorderVersion.value : null,
+        model_improvement_accepted: form.modelImprovementAccepted,
+        model_improvement_version: legalVersions.modelImprovement
       })
       notice.value = copy.value.registered
     } else {
@@ -107,6 +148,17 @@ async function resendVerification() {
     loading.value = false
   }
 }
+
+onMounted(async () => {
+  try {
+    const config = await apiGet<{ visible: boolean; consent_version: string | null }>('/legal/config')
+    crossBorderVisible.value = config.visible
+    crossBorderVersion.value = config.consent_version
+  } catch {
+    crossBorderVisible.value = false
+    crossBorderVersion.value = null
+  }
+})
 </script>
 
 <template>
@@ -140,6 +192,40 @@ async function resendVerification() {
             <span>{{ copy.alias }}</span>
             <input v-model="form.alias" class="input" autocomplete="nickname" maxlength="80" required />
           </label>
+
+          <div v-if="mode === 'register'" class="registration-profile-fields">
+            <label class="form-field">
+              <span>{{ copy.currentScore }}</span>
+              <input v-model.number="form.baselineWritingScore" class="input" type="number" min="0" max="30" step="1" inputmode="numeric" />
+              <small class="muted">{{ copy.currentScoreHint }}</small>
+            </label>
+            <label class="form-field">
+              <span>{{ copy.examDate }}</span>
+              <input v-model="form.plannedExamDate" class="input" type="date" :min="minimumExamDate" />
+              <small class="exam-credit-hint">{{ copy.examDateHint }}</small>
+            </label>
+          </div>
+
+          <fieldset v-if="mode === 'register'" class="consent-group">
+            <legend>{{ app.locale === 'zh' ? '协议与选择' : 'Agreements and choices' }}</legend>
+            <label class="consent-row">
+              <input v-model="form.coreAgreementsAccepted" type="checkbox" required />
+              <span>
+                {{ copy.acceptCorePrefix }}
+                <router-link to="/agreements/terms" target="_blank">{{ copy.acceptTerms }}</router-link>
+                {{ copy.acceptCoreJoin }}
+                <router-link to="/agreements/privacy" target="_blank">{{ copy.acceptPrivacy }}</router-link>{{ copy.acceptCoreSuffix }}
+              </span>
+            </label>
+            <label v-if="crossBorderVisible" class="consent-row">
+              <input v-model="form.crossBorderAccepted" type="checkbox" required />
+              <span><router-link to="/agreements/cross-border" target="_blank">{{ copy.acceptCrossBorder }}</router-link></span>
+            </label>
+            <label class="consent-row optional">
+              <input v-model="form.modelImprovementAccepted" type="checkbox" />
+              <span><router-link to="/agreements/model-improvement" target="_blank">{{ copy.improveModel }}</router-link></span>
+            </label>
+          </fieldset>
           <label v-if="mode !== 'forgot'" class="form-field">
             <span>{{ copy.password }}</span>
             <input v-model="form.password" class="input" type="password" :autocomplete="mode === 'login' ? 'current-password' : 'new-password'" :minlength="mode === 'register' ? 10 : 1" required />

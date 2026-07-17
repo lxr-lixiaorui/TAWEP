@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"answerNormalImage","type":"string","label":"Answer page at 1:01","default":"capture/assets/en/answer-101.png"},
+    {"id":"answerWarningImage","type":"string","label":"Answer page at 1:00","default":"capture/assets/en/answer-100.png"},
+    {"id":"reportImage","type":"string","label":"Report overview","default":"capture/assets/en/report.png"},
+    {"id":"scoreImage","type":"string","label":"Score details","default":"capture/assets/en/score-details.png"},
+    {"id":"actionImage","type":"string","label":"Action plan","default":"capture/assets/en/action.png"},
+    {"id":"rewriteImage","type":"string","label":"AI Rewrite","default":"capture/assets/en/rewrite.png"},
+    {"id":"grammarImage","type":"string","label":"Grammar analysis","default":"capture/assets/en/grammar.png"},
+    {"id":"grammarHoverImage","type":"string","label":"Native spelling tooltip","default":"capture/assets/en/grammar-spelling.png"},
+    {"id":"timerTitle","type":"string","label":"Timer title","default":"Exam-Style UI & Timer"},
+    {"id":"timerBody","type":"string","label":"Timer body","default":"The native timer flashes as one minute remains."},
+    {"id":"reportTitle","type":"string","label":"Report title","default":"A complete report, focused in sequence"},
+    {"id":"reportFeature1","type":"string","label":"Report feature 1","default":"4-Dimension Scoring"},
+    {"id":"reportFeature2","type":"string","label":"Report feature 2","default":"Pinpoint Weak Spots"},
+    {"id":"reportFeature3","type":"string","label":"Report feature 3","default":"Prioritized Next Step"},
+    {"id":"reportFeature4","type":"string","label":"Report feature 4","default":"Evidence in Context"},
+    {"id":"actionTitle","type":"string","label":"Action title","default":"From diagnosis to action"},
+    {"id":"actionFeature1","type":"string","label":"Action feature 1","default":"See the exact problem"},
+    {"id":"actionFeature2","type":"string","label":"Action feature 2","default":"Get an executable method"},
+    {"id":"actionFeature3","type":"string","label":"Action feature 3","default":"Apply it in AI Rewrite"},
+    {"id":"rewriteTitle","type":"string","label":"Rewrite title","default":"Advice, already applied"},
+    {"id":"rewriteFeature1","type":"string","label":"Rewrite feature 1","default":"Stronger logical structure"},
+    {"id":"rewriteFeature2","type":"string","label":"Rewrite feature 2","default":"Repaired reasoning gaps"},
+    {"id":"rewriteFeature3","type":"string","label":"Rewrite feature 3","default":"Refined core expression"},
+    {"id":"grammarTitle","type":"string","label":"Grammar title","default":"Interactive Grammar Analysis"},
+    {"id":"grammarFeature1","type":"string","label":"Grammar feature 1","default":"Grammar"},
+    {"id":"grammarFeature2","type":"string","label":"Grammar feature 2","default":"Spelling"},
+    {"id":"grammarFeature3","type":"string","label":"Grammar feature 3","default":"Wording"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>TAWEP native UI feature tour</title>
+    <script src="node_modules/gsap/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Microsoft YaHei"; src: local("Microsoft YaHei"); }
+      * { box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        margin: 0;
+        overflow: hidden;
+        background: #eef3f2;
+        color: #142527;
+        font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+      }
+      #root, .scene, .shot, .camera {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+      #root { background: #eef3f2; }
+      .shot { visibility: hidden; opacity: 0; background: #eef3f2; }
+      #answer-shot { visibility: visible; opacity: 1; }
+      .camera {
+        transform-origin: 0 0;
+        will-change: transform, opacity;
+      }
+      .screen {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 1920px;
+        height: 1080px;
+        object-fit: cover;
+        user-select: none;
+      }
+      .screen.overlay { opacity: 0; }
+      .glass-note {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+        width: 660px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 92px 72px;
+        overflow: hidden;
+        background: rgba(239, 247, 246, .86);
+        opacity: 0;
+        will-change: opacity, transform;
+      }
+      .glass-note.left { left: 0; border-right: 1px solid rgba(0, 109, 111, .28); }
+      .glass-note.right { right: 0; border-left: 1px solid rgba(0, 109, 111, .28); }
+      .note-kicker {
+        margin: 0 0 14px;
+        color: #007b75;
+        font-size: 18px;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+      .glass-note h2 {
+        max-width: 510px;
+        margin: 0 0 22px;
+        color: #142527;
+        font-size: 46px;
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+      .glass-note > p:last-child,
+      .note-copy {
+        max-width: 500px;
+        margin: 0;
+        color: #42575b;
+        font-size: 23px;
+        line-height: 1.48;
+      }
+      .feature-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(29, 74, 75, .24);
+      }
+      .feature {
+        position: relative;
+        min-height: 54px;
+        display: flex;
+        align-items: center;
+        padding: 8px 0 8px 34px;
+        color: #536568;
+        font-size: 23px;
+        font-weight: 760;
+        line-height: 1.25;
+        opacity: .36;
+      }
+      .feature::before {
+        position: absolute;
+        left: 2px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: currentColor;
+        content: "";
+      }
+      #action-note { opacity: 0; }
+      .cursor {
+        position: absolute;
+        z-index: 12;
+        width: 58px;
+        height: 58px;
+        color: #102a2d;
+        opacity: 0;
+        transform-origin: 7px 7px;
+        pointer-events: none;
+      }
+      .cursor svg { display: block; width: 100%; height: 100%; }
+      .native-label {
+        display: inline-block;
+        width: max-content;
+        margin-bottom: 16px;
+        padding-bottom: 7px;
+        border-bottom: 4px solid #f2c763;
+        color: #6b4800;
+        font-size: 18px;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="17.2" data-width="1920" data-height="1080">
+      <section id="native-ui-tour" class="clip scene" data-start="0" data-duration="17.2" data-track-index="0">
+        <div id="answer-shot" class="shot">
+          <div id="answer-camera" class="camera" data-layout-allow-overflow>
+            <img id="answer-normal" class="screen" data-var-src="answerNormalImage" src="capture/assets/en/answer-101.png" alt="TAWEP answer page at one minute and one second">
+            <img id="answer-warning" class="screen overlay" data-var-src="answerWarningImage" src="capture/assets/en/answer-100.png" alt="TAWEP native one-minute warning">
+          </div>
+          <aside id="timer-note" class="glass-note left">
+            <span class="native-label">TIMED PRACTICE</span>
+            <h2 data-var-text="timerTitle">Exam-Style UI &amp; Timer</h2>
+            <p class="note-copy" data-var-text="timerBody">The native timer flashes as one minute remains.</p>
+          </aside>
+        </div>
+
+        <div id="report-shot" class="shot">
+          <div id="report-camera" class="camera" data-layout-allow-overflow>
+            <img id="report-overview" class="screen" data-var-src="reportImage" src="capture/assets/en/report.png" alt="TAWEP report overview">
+            <img id="report-score" class="screen overlay" data-var-src="scoreImage" src="capture/assets/en/score-details.png" alt="TAWEP score and evidence details">
+            <img id="report-action" class="screen overlay" data-var-src="actionImage" src="capture/assets/en/action.png" alt="TAWEP action plan">
+          </div>
+          <aside id="report-note" class="glass-note left">
+            <span class="native-label">REPORT</span>
+            <h2 data-var-text="reportTitle">A complete report, focused in sequence</h2>
+            <div class="feature-list">
+              <div id="report-feature-1" class="feature" data-var-text="reportFeature1">4-Dimension Scoring</div>
+              <div id="report-feature-2" class="feature" data-var-text="reportFeature2">Pinpoint Weak Spots</div>
+              <div id="report-feature-3" class="feature" data-var-text="reportFeature3">Prioritized Next Step</div>
+              <div id="report-feature-4" class="feature" data-var-text="reportFeature4">Evidence in Context</div>
+            </div>
+          </aside>
+          <aside id="action-note" class="glass-note left">
+            <span class="native-label">ACTION PLAN</span>
+            <h2 data-var-text="actionTitle">From diagnosis to action</h2>
+            <div class="feature-list">
+              <div id="action-feature-1" class="feature" data-var-text="actionFeature1">See the exact problem</div>
+              <div id="action-feature-2" class="feature" data-var-text="actionFeature2">Get an executable method</div>
+              <div id="action-feature-3" class="feature" data-var-text="actionFeature3">Apply it in AI Rewrite</div>
+            </div>
+          </aside>
+        </div>
+
+        <div id="rewrite-shot" class="shot">
+          <div id="rewrite-camera" class="camera" data-layout-allow-overflow>
+            <img class="screen" data-var-src="rewriteImage" src="capture/assets/en/rewrite.png" alt="TAWEP native AI Rewrite comparison">
+          </div>
+          <aside id="rewrite-note" class="glass-note right">
+            <span class="native-label">AI REWRITE</span>
+            <h2 data-var-text="rewriteTitle">Advice, already applied</h2>
+            <div class="feature-list">
+              <div id="rewrite-feature-1" class="feature" data-var-text="rewriteFeature1">Stronger logical structure</div>
+              <div id="rewrite-feature-2" class="feature" data-var-text="rewriteFeature2">Repaired reasoning gaps</div>
+              <div id="rewrite-feature-3" class="feature" data-var-text="rewriteFeature3">Refined core expression</div>
+            </div>
+          </aside>
+        </div>
+
+        <div id="grammar-shot" class="shot">
+          <div id="grammar-camera" class="camera" data-layout-allow-overflow>
+            <img id="grammar-normal" class="screen" data-var-src="grammarImage" src="capture/assets/en/grammar.png" alt="TAWEP interactive grammar analysis">
+            <img id="grammar-hover" class="screen overlay" data-var-src="grammarHoverImage" src="capture/assets/en/grammar-spelling.png" alt="TAWEP native spelling tooltip">
+          </div>
+          <aside id="grammar-note" class="glass-note right">
+            <span class="native-label">LANGUAGE FEEDBACK</span>
+            <h2 data-var-text="grammarTitle">Interactive Grammar Analysis</h2>
+            <div class="feature-list">
+              <div id="grammar-feature-1" class="feature" data-var-text="grammarFeature1">Grammar</div>
+              <div id="grammar-feature-2" class="feature" data-var-text="grammarFeature2">Spelling</div>
+              <div id="grammar-feature-3" class="feature" data-var-text="grammarFeature3">Wording</div>
+            </div>
+          </aside>
+          <div id="native-cursor" class="cursor" aria-hidden="true">
+            <svg viewBox="0 0 64 64" role="img">
+              <path d="M8 5 L47 37 L29 40 L39 58 L29 63 L19 44 L7 57 Z" fill="#fff" stroke="currentColor" stroke-width="4" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.to("#answer-camera", { scale: 2.35, x: -2550, y: 70, duration: 1.05, ease: "power3.inOut" }, .28);
+      tl.fromTo("#timer-note", { opacity: 0, x: -34 }, { opacity: 1, x: 0, duration: .58, ease: "power3.out", immediateRender: false }, .72);
+      tl.set("#answer-warning", { opacity: 1 }, 1.42);
+
+      tl.set("#report-shot", { visibility: "visible" }, 2.4);
+      tl.fromTo("#report-shot", { opacity: 0 }, { opacity: 1, duration: .5, ease: "sine.inOut", immediateRender: false }, 2.42);
+      tl.to("#answer-shot", { opacity: 0, duration: .5, ease: "sine.inOut" }, 2.42);
+      tl.set("#answer-shot", { visibility: "hidden" }, 2.92);
+      tl.to("#report-camera", { scale: 1.7, x: -1010, y: -164, duration: 1, ease: "power3.inOut" }, 2.72);
+      tl.fromTo("#report-note", { opacity: 0, x: -34 }, { opacity: 1, x: 0, duration: .56, ease: "power3.out", immediateRender: false }, 3.04);
+      tl.to("#report-feature-2", { opacity: 1, color: "#00837c", duration: .24 }, 3.28);
+      tl.to("#report-feature-2", { opacity: .36, color: "#536568", duration: .2 }, 4.08);
+
+      tl.to("#report-score", { opacity: 1, duration: .42, ease: "sine.inOut" }, 4.02);
+      tl.to("#report-overview", { opacity: 0, duration: .42, ease: "sine.inOut" }, 4.02);
+      tl.to("#report-camera", { scale: 1.36, x: -500, y: -85, duration: .88, ease: "power3.inOut" }, 4.02);
+      tl.to("#report-feature-1", { opacity: 1, color: "#00837c", duration: .24 }, 4.34);
+      tl.to("#report-feature-1", { opacity: .36, color: "#536568", duration: .2 }, 5.06);
+      tl.to("#report-camera", { scale: 1.72, x: -745, y: -246, duration: .76, ease: "power3.inOut" }, 5.02);
+      tl.to("#report-feature-4", { opacity: 1, color: "#00837c", duration: .24 }, 5.28);
+      tl.to("#report-feature-4", { opacity: .36, color: "#536568", duration: .2 }, 6.04);
+
+      tl.to("#report-action", { opacity: 1, duration: .46, ease: "sine.inOut" }, 5.96);
+      tl.to("#report-score", { opacity: 0, duration: .46, ease: "sine.inOut" }, 5.96);
+      tl.to("#report-camera", { scale: 1.52, x: 80, y: -340, duration: .88, ease: "power3.inOut" }, 5.98);
+      tl.to("#report-note", { opacity: 0, x: -30, duration: .34, ease: "power2.in" }, 6.02);
+      tl.fromTo("#action-note", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: .5, ease: "power3.out", immediateRender: false }, 6.3);
+      tl.to("#action-feature-1", { opacity: 1, color: "#00837c", duration: .22 }, 6.58);
+      tl.to("#report-camera", { x: -650, duration: .54, ease: "power3.inOut" }, 6.88);
+      tl.to("#action-feature-2", { opacity: 1, color: "#00837c", duration: .22 }, 7.14);
+      tl.to("#action-feature-3", { opacity: 1, color: "#00837c", duration: .22 }, 7.5);
+      tl.to("#report-camera", { scale: 1.58, x: -680, y: -645, duration: .7, ease: "power3.inOut" }, 7.5);
+
+      tl.set("#rewrite-shot", { visibility: "visible" }, 8.36);
+      tl.fromTo("#rewrite-shot", { opacity: 0 }, { opacity: 1, duration: .5, ease: "sine.inOut", immediateRender: false }, 8.38);
+      tl.to("#report-shot", { opacity: 0, duration: .5, ease: "sine.inOut" }, 8.38);
+      tl.set("#report-shot", { visibility: "hidden" }, 8.88);
+      tl.to("#rewrite-camera", { scale: 1.55, x: -230, y: -405, duration: 1.05, ease: "power3.inOut" }, 8.68);
+      tl.fromTo("#rewrite-note", { opacity: 0, x: 34 }, { opacity: 1, x: 0, duration: .56, ease: "power3.out", immediateRender: false }, 9.08);
+      tl.to("#rewrite-feature-1", { opacity: 1, color: "#00837c", duration: .24 }, 9.42);
+      tl.to("#rewrite-camera", { scale: 1.68, x: -300, y: -520, duration: .72, ease: "power3.inOut" }, 9.76);
+      tl.to("#rewrite-feature-2", { opacity: 1, color: "#00837c", duration: .24 }, 10.08);
+      tl.to("#rewrite-camera", { scale: 1.62, x: -250, y: -645, duration: .72, ease: "power3.inOut" }, 10.52);
+      tl.to("#rewrite-feature-3", { opacity: 1, color: "#00837c", duration: .24 }, 10.82);
+
+      tl.set("#grammar-shot", { visibility: "visible" }, 11.98);
+      tl.fromTo("#grammar-shot", { opacity: 0 }, { opacity: 1, duration: .5, ease: "sine.inOut", immediateRender: false }, 12.0);
+      tl.to("#rewrite-shot", { opacity: 0, duration: .5, ease: "sine.inOut" }, 12.0);
+      tl.set("#rewrite-shot", { visibility: "hidden" }, 12.5);
+      tl.to("#grammar-camera", { scale: 2, x: -1790, y: -190, duration: 1.05, ease: "power3.inOut" }, 12.3);
+      tl.fromTo("#grammar-note", { opacity: 0, x: 34 }, { opacity: 1, x: 0, duration: .56, ease: "power3.out", immediateRender: false }, 12.7);
+      tl.to("#grammar-feature-2", { opacity: 1, color: "#00837c", duration: .24 }, 13.0);
+      tl.fromTo("#native-cursor", { opacity: 0, x: 1190, y: 820, scale: 1.18 }, { opacity: 1, x: 1190, y: 820, scale: 1.18, duration: .24, ease: "power2.out", immediateRender: false }, 13.36);
+      tl.to("#native-cursor", { x: 785, y: 575, scale: 1, duration: 1.05, ease: "power3.inOut" }, 13.64);
+      tl.to("#grammar-hover", { opacity: 1, duration: .16, ease: "none" }, 14.7);
+      tl.to("#native-cursor", { x: 791, y: 581, duration: .18, ease: "power2.out" }, 14.72);
+
+      tl.set("#answer-camera", { scale: 1, x: 0, y: 0 }, 16.72);
+      tl.set("#answer-normal", { opacity: 1 }, 16.72);
+      tl.set("#answer-warning, #timer-note", { opacity: 0 }, 16.72);
+      tl.set("#answer-shot", { visibility: "visible" }, 16.7);
+      tl.to("#answer-shot", { opacity: 1, duration: .48, ease: "sine.inOut" }, 16.72);
+      tl.to("#grammar-shot", { opacity: 0, duration: .48, ease: "sine.inOut" }, 16.72);
+      tl.to({}, { duration: 17.2 }, 0);
+
+      window.__timelines.main = tl;
+      gsap.globalTimeline.remove(tl);
+      gsap.ticker.sleep();
+    </script>
+  </body>
+</html>

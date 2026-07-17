@@ -25,6 +25,7 @@ from backend.models import (
     Topic,
     UploadedQuestionReview,
     User,
+    UserExamResult,
     UserRole,
     UserStatus,
 )
@@ -40,14 +41,19 @@ from backend.schemas import (
     AdminQuestionReviewOut,
     AdminQuestionUpdate,
     AdminReportFeedbackOut,
+    AdminExamResultOut,
     AdminReviewDecision,
     AdminUserCreate,
+    CrossBorderConfigOut,
+    CrossBorderConfigUpdate,
     QuestionCreate,
     QuestionMessageOut,
 )
 from backend.services.authentication import hash_password, normalize_email, now_utc
 from backend.services.practice import ensure_user_wallet
+from backend.services.question_profiles import ensure_heuristic_profile
 from backend.services.questions import apply_question_messages, next_question_number, resolve_topic
+from backend.services.platform_settings import get_cross_border_config, update_cross_border_visibility
 
 
 router = APIRouter(dependencies=[Depends(require_admin)])
@@ -57,7 +63,7 @@ settings = get_settings()
 def _audit(
     admin: User,
     action: str,
-    target_id: UUID,
+    target_id: UUID | None,
     payload: dict | None = None,
     *,
     target_type: str = "user",
@@ -178,13 +184,67 @@ def _question_payload_from_admin(payload: AdminQuestionCreate) -> QuestionCreate
     )
 
 
-def _question_notice(question: Question, decision: ReviewStatus, comment: str | None) -> tuple[str, str]:
+def _question_notice(
+    question: Question,
+    decision: ReviewStatus,
+    comment: str | None,
+    *,
+    locale: str = "en",
+    rewarded: bool = False,
+) -> tuple[str, str, str | None, str | None]:
+    if locale.startswith("zh"):
+        title = f"你上传的题目已{'通过' if decision == ReviewStatus.accepted else '被拒绝'}"
+        body = f"题目 #{question.question_no}（{question.summary}）已完成审核。"
+        if rewarded:
+            body += f" {settings.question_acceptance_credit} credits 已添加到你的账户。感谢你对 TAWEP 的贡献！"
+        if comment:
+            body += f" 审核备注：{comment.strip()}"
+        return title, body, "/settings?tab=usage" if rewarded else None, "查看记录" if rewarded else None
+
     decision_text = decision.value
     title = f"Your uploaded question was {decision_text}"
     body = f"Question #{question.question_no}, {question.summary}, was {decision_text}."
+    if rewarded:
+        body += (
+            f" {settings.question_acceptance_credit} additional credits have been added to your account."
+            " Thanks for your contribution to TAWEP!"
+        )
     if comment:
         body += f" Reviewer note: {comment.strip()}"
-    return title, body
+    return title, body, "/settings?tab=usage" if rewarded else None, "Check here" if rewarded else None
+
+
+async def _award_accepted_question(
+    db: AsyncSession,
+    question: Question,
+    admin: User,
+) -> bool:
+    if not question.creator_user_id:
+        return False
+    existing = await db.scalar(
+        select(CreditLedger.id).where(
+            CreditLedger.question_id == question.id,
+            CreditLedger.reason == "question_accepted_reward",
+        )
+    )
+    if existing is not None:
+        return False
+    await ensure_user_wallet(db, question.creator_user_id)
+    wallet = await db.get(CreditWallet, question.creator_user_id, with_for_update=True)
+    if wallet is None:
+        raise HTTPException(status_code=500, detail="Question creator credit wallet is missing")
+    reward = settings.question_acceptance_credit
+    wallet.balance += reward
+    db.add(
+        CreditLedger(
+            user_id=question.creator_user_id,
+            delta=reward,
+            reason="question_accepted_reward",
+            question_id=question.id,
+            admin_id=admin.id,
+        )
+    )
+    return True
 
 
 @router.get("/accounts", response_model=list[AdminAccountOut])
@@ -237,12 +297,13 @@ async def create_account(
         wallet = CreditWallet(
             user_id=user.id,
             balance=settings.initial_credit,
-            weekly_limit=settings.weekly_credit_limit,
+            weekly_limit=0,
             weekly_used=0,
             weekly_window_start=now_utc(),
             total_planned_credit=settings.initial_credit,
         )
         db.add(wallet)
+        db.add(CreditLedger(user_id=user.id, delta=settings.initial_credit, reason="initial_credit"))
         db.add(
             InboxMessage(
                 user_id=user.id,
@@ -365,6 +426,62 @@ async def admin_login() -> APIMessage:
     return APIMessage(message="Use the normal authentication endpoint with an administrator account")
 
 
+@router.get("/legal/cross-border", response_model=CrossBorderConfigOut)
+async def cross_border_visibility(db: AsyncSession = Depends(get_db)) -> CrossBorderConfigOut:
+    return CrossBorderConfigOut(**await get_cross_border_config(db))
+
+
+@router.patch("/legal/cross-border", response_model=CrossBorderConfigOut)
+async def change_cross_border_visibility(
+    payload: CrossBorderConfigUpdate,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> CrossBorderConfigOut:
+    async with db.begin():
+        before = await get_cross_border_config(db, lock=True)
+        result = await update_cross_border_visibility(db, payload.visible, admin.id)
+        db.add(
+            _audit(
+                admin,
+                "legal.cross_border.visibility",
+                None,
+                {
+                    "visible_before": before["visible"],
+                    "visible_after": result["visible"],
+                    "activation": result["activation"],
+                    "consent_version": result["consent_version"],
+                },
+                target_type="platform_setting",
+            )
+        )
+    return CrossBorderConfigOut(**result)
+
+
+@router.get("/exam-results", response_model=list[AdminExamResultOut])
+async def reported_exam_results(db: AsyncSession = Depends(get_db)) -> list[AdminExamResultOut]:
+    rows = (
+        await db.execute(
+            select(UserExamResult, User)
+            .join(User, User.id == UserExamResult.user_id)
+            .order_by(UserExamResult.updated_at.desc(), UserExamResult.created_at.desc())
+        )
+    ).all()
+    return [
+        AdminExamResultOut(
+            id=result.id,
+            user_id=user.id,
+            user_alias=user.alias,
+            user_email=user.email,
+            baseline_writing_score=result.baseline_writing_score,
+            writing_score=result.writing_score,
+            improvement=result.improvement,
+            exam_date=result.exam_date,
+            submitted_at=result.updated_at,
+        )
+        for result, user in rows
+    ]
+
+
 @router.get("/feedback", response_model=list[AdminReportFeedbackOut])
 async def report_feedback(
     feedback_type: str | None = Query(default=None, pattern="^(too_high|too_low|other)$"),
@@ -450,6 +567,8 @@ async def create_official_question(
         apply_question_messages(question, _question_payload_from_admin(payload))
         db.add(question)
         await db.flush()
+        if question.status == ReviewStatus.accepted:
+            await ensure_heuristic_profile(db, question, force=True)
         db.add(
             _audit(
                 admin,
@@ -518,8 +637,31 @@ async def update_question(
             review.comment = payload.review_comment
             review.reviewed_at = now_utc()
             if question.creator_user_id:
-                title, body = _question_notice(question, question.status, payload.review_comment)
-                db.add(InboxMessage(user_id=question.creator_user_id, title=title, body=body, type="moderation"))
+                rewarded = (
+                    await _award_accepted_question(db, question, admin)
+                    if question.status == ReviewStatus.accepted
+                    else False
+                )
+                creator = await db.get(User, question.creator_user_id)
+                title, body, action_url, action_label = _question_notice(
+                    question,
+                    question.status,
+                    payload.review_comment,
+                    locale=creator.preferred_locale if creator else "en",
+                    rewarded=rewarded,
+                )
+                db.add(
+                    InboxMessage(
+                        user_id=question.creator_user_id,
+                        title=title,
+                        body=body,
+                        type="moderation",
+                        action_url=action_url,
+                        action_label=action_label,
+                    )
+                )
+        if question.status == ReviewStatus.accepted:
+            await ensure_heuristic_profile(db, question, force=True)
         db.add(
             _audit(
                 admin,
@@ -640,9 +782,28 @@ async def _decide_question(
         review.reviewer_id = admin.id
         review.comment = comment
         review.reviewed_at = now_utc()
+        if decision == ReviewStatus.accepted:
+            await ensure_heuristic_profile(db, question, force=True)
         if question.creator_user_id:
-            title, body = _question_notice(question, decision, comment)
-            db.add(InboxMessage(user_id=question.creator_user_id, title=title, body=body, type="moderation"))
+            rewarded = await _award_accepted_question(db, question, admin) if decision == ReviewStatus.accepted else False
+            creator = await db.get(User, question.creator_user_id)
+            title, body, action_url, action_label = _question_notice(
+                question,
+                decision,
+                comment,
+                locale=creator.preferred_locale if creator else "en",
+                rewarded=rewarded,
+            )
+            db.add(
+                InboxMessage(
+                    user_id=question.creator_user_id,
+                    title=title,
+                    body=body,
+                    type="moderation",
+                    action_url=action_url,
+                    action_label=action_label,
+                )
+            )
         db.add(
             _audit(
                 admin,

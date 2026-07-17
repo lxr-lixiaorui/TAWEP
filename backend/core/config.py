@@ -28,7 +28,7 @@ load_env_file()
 
 
 class Settings:
-    app_name = "TAWEP API"
+    app_name = "TOEFL Academic Discussion Evaluation Project API"
     api_prefix = "/api/v1"
     cors_origins = [
         origin.strip()
@@ -46,9 +46,9 @@ class Settings:
     evaluation_worker_poll_seconds = float(getenv("EVALUATION_WORKER_POLL_SECONDS", "2"))
     evaluation_timeout_seconds = float(getenv("EVALUATION_TIMEOUT_SECONDS", "360"))
     evaluation_max_attempts = int(getenv("EVALUATION_MAX_ATTEMPTS", "3"))
-    initial_credit = int(getenv("INITIAL_CREDIT", "180"))
-    weekly_credit_limit = int(getenv("WEEKLY_CREDIT_LIMIT", "60"))
+    initial_credit = int(getenv("INITIAL_CREDIT", "45"))
     evaluation_credit_cost = int(getenv("EVALUATION_CREDIT_COST", "3"))
+    question_acceptance_credit = int(getenv("QUESTION_ACCEPTANCE_CREDIT", "60"))
     app_env = getenv("APP_ENV", "development").lower()
     public_app_url = getenv("PUBLIC_APP_URL", "http://127.0.0.1:5173").rstrip("/")
     auth_secret_key = getenv("AUTH_SECRET_KEY", "dev-only-secret-change-before-production-please")
@@ -66,6 +66,7 @@ class Settings:
     email_delivery_mode = getenv("EMAIL_DELIVERY_MODE", "outbox").lower()
     mail_from_email = getenv("MAIL_FROM_EMAIL", "no-reply@localhost")
     mail_from_name = getenv("MAIL_FROM_NAME", "TAWEP")
+    byok_encryption_key = getenv("BYOK_ENCRYPTION_KEY")
 
     def validate_security(self) -> None:
         if len(self.auth_secret_key) < 32:
@@ -78,6 +79,8 @@ class Settings:
             raise RuntimeError("AUTH_COOKIE_SECURE must be true when AUTH_COOKIE_SAMESITE=none")
         if self.email_delivery_mode != "outbox":
             raise RuntimeError("Only EMAIL_DELIVERY_MODE=outbox is available until a mail provider is configured")
+        if self.app_env == "production" and not self.byok_encryption_key:
+            raise RuntimeError("BYOK_ENCRYPTION_KEY must be configured in production")
 
 
 @lru_cache

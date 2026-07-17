@@ -19,10 +19,9 @@ type Summary = {
   user_id: string
   average_score: number
   practice_count: number
+  weekly_practice_count: number
   credit: {
     balance: number
-    weekly_limit: number
-    weekly_used: number
     total_planned_credit: number
   }
 }
@@ -63,16 +62,13 @@ const primaryRecommendation = computed(() => recommendations.value[0] ?? {
   question_no: 1,
   summary: t('dashboard.fallbackPrompt'),
   topic: t('dashboard.generalTopic'),
-  reason: t('dashboard.fallbackReason')
+  reason: t('dashboard.fallbackReason'),
+  focus_dimension: 'logical_structure'
 })
 
 const latestBreakdown = computed(() => breakdown.value[breakdown.value.length - 1] ?? null)
 const weakestDimension = computed<DimensionKey>(() => {
-  const recommendationReason = String(primaryRecommendation.value.reason ?? '').toLowerCase()
-  const recommendedDimension = dimensionKeys.find((key) =>
-    recommendationReason.includes(String(t(`report.criteria.${key}`)).toLowerCase()) ||
-    recommendationReason.includes(key.replaceAll('_', ' '))
-  )
+  const recommendedDimension = dimensionKeys.find((key) => key === primaryRecommendation.value.focus_dimension)
   if (recommendedDimension) return recommendedDimension
   const latest = latestBreakdown.value
   if (!latest) return 'logical_structure'
@@ -132,7 +128,7 @@ const radarOption = computed(() => ({
 const averageScore30 = computed(() =>
   summary.value?.practice_count ? Math.round(summary.value.average_score * 5 + 5) : null
 )
-const weekPractices = computed(() => Math.floor((summary.value?.credit.weekly_used ?? 0) / 3))
+const weekPractices = computed(() => summary.value?.weekly_practice_count ?? 0)
 const weeklyGoal = 10
 const weeklyProgress = computed(() => Math.min(100, Math.round((weekPractices.value / weeklyGoal) * 100)))
 const threeDayDelta = computed(() => {

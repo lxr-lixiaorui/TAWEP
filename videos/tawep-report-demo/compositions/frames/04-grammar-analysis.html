@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Grammar Analysis</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          color: #1f2329;
+          font-family: sans-serif;
+          container-type: size;
+        }
+
+        .frame-04-grammar-analysis-ground {
+          position: absolute;
+          inset: 0;
+          background: #ffffff;
+        }
+
+        .frame-04-grammar-analysis-stage {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        .frame-04-grammar-analysis-surface {
+          position: absolute;
+          left: 130px;
+          top: 112px;
+          width: 1660px;
+          height: 720px;
+          overflow: hidden;
+          border: 1.5px solid rgba(0, 109, 111, 0.2);
+          border-radius: 14px;
+          background: rgba(0, 109, 111, 0.04);
+        }
+
+        .frame-04-grammar-analysis-screenshot {
+          position: absolute;
+          left: -205px;
+          top: -118px;
+          display: block;
+          width: 2054px;
+          height: 1156px;
+          max-width: none;
+          user-select: none;
+        }
+
+        .frame-04-grammar-analysis-focus {
+          position: absolute;
+          left: 1295px;
+          top: 398px;
+          display: block;
+          width: 68px;
+          height: 29px;
+          border: 1.5px solid rgba(0, 109, 111, 0.35);
+          border-radius: 6px;
+          background: rgba(0, 109, 111, 0.15);
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .frame-04-grammar-analysis-cursor {
+          position: absolute;
+          left: 1332px;
+          top: 414px;
+          z-index: 5;
+          display: block;
+          width: 42px;
+          height: 42px;
+          pointer-events: none;
+          transform-origin: 4px 4px;
+        }
+
+        .frame-04-grammar-analysis-cursor svg {
+          display: block;
+          width: 42px;
+          height: 42px;
+          overflow: visible;
+        }
+
+        .frame-04-grammar-analysis-ripple {
+          position: absolute;
+          left: 1320px;
+          top: 402px;
+          z-index: 4;
+          display: block;
+          width: 38px;
+          height: 38px;
+          border: 2px solid #006d6f;
+          border-radius: 50%;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .frame-04-grammar-analysis-popover {
+          position: absolute;
+          left: 1068px;
+          top: 232px;
+          z-index: 6;
+          box-sizing: border-box;
+          width: 430px;
+          min-height: 150px;
+          padding: 20px 24px 21px;
+          border: 1.5px solid rgba(0, 109, 111, 0.2);
+          border-radius: 12px;
+          background: #ffffff;
+          opacity: 0;
+        }
+
+        .frame-04-grammar-analysis-popover::after {
+          position: absolute;
+          right: 132px;
+          bottom: -10px;
+          width: 18px;
+          height: 18px;
+          border-right: 1.5px solid rgba(0, 109, 111, 0.2);
+          border-bottom: 1.5px solid rgba(0, 109, 111, 0.2);
+          background: #ffffff;
+          content: "";
+          transform: rotate(45deg);
+        }
+
+        .frame-04-grammar-analysis-type {
+          margin: 0 0 5px;
+          color: #006d6f;
+          font-size: 17px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          line-height: 1.2;
+          text-transform: uppercase;
+        }
+
+        .frame-04-grammar-analysis-correction {
+          margin: 0 0 7px;
+          color: #1f2329;
+          font-size: 29px;
+          font-weight: 650;
+          letter-spacing: 0;
+          line-height: 1.15;
+        }
+
+        .frame-04-grammar-analysis-note {
+          margin: 0;
+          max-width: 355px;
+          color: #5d6970;
+          font-size: 20px;
+          font-weight: 400;
+          letter-spacing: 0;
+          line-height: 1.35;
+        }
+      </style>
+
+      <div data-hf-id="hf-ef8n" id="root" data-composition-id="04-grammar-analysis" data-width="1920" data-height="1080" data-duration="3.75">
+        <div data-hf-id="hf-plj9" id="frame-04-grammar-analysis-ground" class="clip frame-04-grammar-analysis-ground" data-start="0" data-duration="3.75" data-track-index="0"></div>
+
+        <div data-hf-id="hf-ulzi" id="frame-04-grammar-analysis-stage" class="clip frame-04-grammar-analysis-stage" data-start="0" data-duration="3.75" data-track-index="1">
+          <div data-hf-id="hf-iapl" class="frame-04-grammar-analysis-surface">
+            <img data-hf-id="hf-ovrp" data-layout-allow-overflow class="frame-04-grammar-analysis-screenshot" src="capture/assets/grammar.png" alt="" draggable="false">
+            <div data-hf-id="hf-vw0g" class="frame-04-grammar-analysis-focus"></div>
+          </div>
+
+          <div data-hf-id="hf-1y92" class="frame-04-grammar-analysis-ripple"></div>
+
+          <div data-hf-id="hf-3ofj" class="frame-04-grammar-analysis-cursor" aria-hidden="true">
+            <svg data-hf-id="hf-tfke" viewBox="0 0 42 42" role="presentation">
+              <path data-hf-id="hf-xni4" d="M5 3.5 31.5 22l-11.2 1.6-6.1 10.1L5 3.5Z" fill="#006d6f" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <aside data-hf-id="hf-ilc2" class="frame-04-grammar-analysis-popover">
+            <p data-hf-id="hf-2gf5" class="frame-04-grammar-analysis-type">Spelling</p>
+            <p data-hf-id="hf-tzcn" class="frame-04-grammar-analysis-correction">helpful</p>
+            <p data-hf-id="hf-18vy" class="frame-04-grammar-analysis-note">Replace "helpfull" with the correct spelling.</p>
+          </aside>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+
+        const timeline = gsap.timeline({ paused: true });
+
+        timeline.fromTo(
+          ".frame-04-grammar-analysis-surface",
+          { opacity: 0, y: 28, scale: 0.965 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.7,
+            ease: "power3.out",
+            immediateRender: false,
+          },
+          0,
+        );
+
+        timeline.fromTo(
+          ".frame-04-grammar-analysis-cursor",
+          { opacity: 0, x: -330, y: 230, scale: 1 },
+          {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            scale: 1,
+            duration: 0.62,
+            ease: "power3.out",
+            immediateRender: false,
+          },
+          0.85,
+        );
+
+        timeline.to(
+          ".frame-04-grammar-analysis-cursor",
+          {
+            scale: 0.86,
+            duration: 0.08,
+            ease: "power2.in",
+          },
+          1.49,
+        );
+
+        timeline.to(
+          ".frame-04-grammar-analysis-cursor",
+          {
+            scale: 1,
+            duration: 0.1,
+            ease: "power2.out",
+          },
+          1.57,
+        );
+
+        timeline.fromTo(
+          ".frame-04-grammar-analysis-ripple",
+          { opacity: 0.8, scale: 0.2 },
+          {
+            opacity: 0,
+            scale: 2.6,
+            duration: 0.58,
+            ease: "power2.out",
+            immediateRender: false,
+          },
+          1.49,
+        );
+
+        timeline.fromTo(
+          ".frame-04-grammar-analysis-focus",
+          { opacity: 0, scale: 0.86 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.28,
+            ease: "power2.out",
+            immediateRender: false,
+          },
+          1.52,
+        );
+
+        timeline.fromTo(
+          ".frame-04-grammar-analysis-popover",
+          { opacity: 0, y: 18, scale: 0.965 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.5,
+            ease: "power3.out",
+            immediateRender: false,
+          },
+          1.8,
+        );
+
+        timeline.to(
+          ".frame-04-grammar-analysis-focus",
+          {
+            backgroundColor: "rgba(0, 109, 111, 0.08)",
+            duration: 0.42,
+            ease: "power2.out",
+          },
+          2.18,
+        );
+
+        window.__timelines["04-grammar-analysis"] = timeline;
+      </script>
+    </template>
+  </body>
+</html>

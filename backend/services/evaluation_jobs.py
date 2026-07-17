@@ -12,10 +12,12 @@ from backend.models import (
     EvaluationJob,
     EvaluationReport,
     SessionStatus,
+    User,
+    UserAIConfig,
 )
 from backend.schemas import EvaluationJobOut
 from backend.services.evaluation_contract import normalize_locale
-from backend.services.practice import InsufficientCreditError, ensure_user_wallet
+from backend.services.practice import InsufficientCreditError, ensure_user_wallet, evaluation_credit_cost_for_user
 
 
 EVALUATION_LEDGER_REASON = "writing_evaluation"
@@ -120,12 +122,14 @@ async def enqueue_evaluation(
         )
         if wallet is None:
             raise RuntimeError("Credit wallet could not be created")
-        cost = settings.evaluation_credit_cost
-        if wallet.balance < cost or wallet.weekly_used + cost > wallet.weekly_limit:
+        user = await db.get(User, user_id)
+        if user is None:
+            raise RuntimeError("User could not be loaded")
+        cost = evaluation_credit_cost_for_user(user)
+        if wallet.balance < cost:
             raise InsufficientCreditError
 
         wallet.balance -= cost
-        wallet.weekly_used += cost
         session.answer_text = answer_text
         session.word_count = len(answer_text.split())
         session.status = SessionStatus.submitted
@@ -138,11 +142,19 @@ async def enqueue_evaluation(
                 session_id=session.id,
             )
         )
+        personal_config = await db.scalar(
+            select(UserAIConfig).where(
+                UserAIConfig.user_id == user_id,
+                UserAIConfig.enabled.is_(True),
+            )
+        )
         job = EvaluationJob(
             session_id=session.id,
             status="queued",
             stage="queued",
             report_locale=locale,
+            api_source="user" if personal_config is not None else "platform",
+            ai_config_id=personal_config.id if personal_config is not None else None,
             partial_result={},
             attempt=0,
             max_attempts=settings.evaluation_max_attempts,

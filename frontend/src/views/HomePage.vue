@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowRight,
@@ -7,18 +7,146 @@ import {
   ChartNoAxesCombined,
   Check,
   FileSearch,
+  Pause,
+  Play,
   ScanText,
   WandSparkles
 } from '@lucide/vue'
 import PublicHeader from '../components/PublicHeader.vue'
+import SiteFooter from '../components/SiteFooter.vue'
+import { apiGet } from '../api/client'
 
-const { t } = useI18n()
+interface QuestionBankStats {
+  question_count: number
+  topic_count: number
+}
+
+const { locale, t } = useI18n()
+const demoVideo = ref<HTMLVideoElement | null>(null)
+const demoPlaying = ref(false)
+const demoLanguage = computed(() => locale.value.startsWith('zh') ? 'zh' : 'en')
+const demoAssetVersion = 'native-ui-v3'
+const demoSources = computed(() => ({
+  webm: `/media/tawep-report-demo-${demoLanguage.value}.webm?v=${demoAssetVersion}`,
+  mp4: `/media/tawep-report-demo-${demoLanguage.value}.mp4?v=${demoAssetVersion}`,
+  poster: `/media/tawep-report-demo-${demoLanguage.value}-poster.jpg?v=${demoAssetVersion}`
+}))
+const prefersReducedMotion = ref(typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+const questionCount = ref<number | null>(null)
+const topicCount = ref<number | null>(null)
+const displayedQuestionCount = ref(0)
+const displayedTopicCount = ref(0)
+const displayedDimensions = ref(0)
+let motionPreference: MediaQueryList | null = null
+const countAnimations = new Set<number>()
+
+function animateCount(target: number, value: { value: number }) {
+  value.value = 0
+  if (prefersReducedMotion.value || target <= 0) {
+    value.value = target
+    return
+  }
+  const startedAt = performance.now()
+  let frameId = 0
+  const update = (now: number) => {
+    countAnimations.delete(frameId)
+    const progress = Math.min((now - startedAt) / 1300, 1)
+    const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+    value.value = Math.min(target, Math.round(target * eased))
+    if (progress < 1) {
+      frameId = window.requestAnimationFrame(update)
+      countAnimations.add(frameId)
+    }
+  }
+  frameId = window.requestAnimationFrame(update)
+  countAnimations.add(frameId)
+}
+
+async function loadQuestionStats() {
+  try {
+    const result = await apiGet<QuestionBankStats>('/questions/stats')
+    questionCount.value = result.question_count
+    topicCount.value = result.topic_count
+    animateCount(result.question_count, displayedQuestionCount)
+    animateCount(result.topic_count, displayedTopicCount)
+    animateCount(4, displayedDimensions)
+  } catch {
+    displayedDimensions.value = 4
+  }
+}
+
+const demoCopy = computed(() => locale.value.startsWith('zh')
+  ? {
+      label: 'TAWEP 答题与报告功能演示',
+      play: '播放功能演示',
+      pause: '暂停功能演示'
+    }
+  : {
+      label: 'TAWEP answer and report feature demonstration',
+      play: 'Play feature demonstration',
+      pause: 'Pause feature demonstration'
+    })
+
+async function playDemo() {
+  if (!demoVideo.value) return
+  try {
+    await demoVideo.value.play()
+    demoPlaying.value = true
+  } catch {
+    demoPlaying.value = false
+  }
+}
+
+watch(demoLanguage, async () => {
+  demoPlaying.value = false
+  await nextTick()
+  demoVideo.value?.load()
+  if (!prefersReducedMotion.value) void playDemo()
+})
+
+function toggleDemoPlayback() {
+  if (!demoVideo.value) return
+  if (demoPlaying.value) {
+    demoVideo.value.pause()
+    demoPlaying.value = false
+    return
+  }
+  void playDemo()
+}
+
+function applyMotionPreference(event?: MediaQueryListEvent) {
+  prefersReducedMotion.value = event?.matches ?? motionPreference?.matches ?? false
+  if (prefersReducedMotion.value) {
+    demoVideo.value?.pause()
+    demoPlaying.value = false
+    countAnimations.forEach((frame) => window.cancelAnimationFrame(frame))
+    countAnimations.clear()
+    if (questionCount.value !== null) displayedQuestionCount.value = questionCount.value
+    if (topicCount.value !== null) displayedTopicCount.value = topicCount.value
+    displayedDimensions.value = 4
+  } else {
+    void playDemo()
+  }
+}
+
+onMounted(() => {
+  motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+  motionPreference.addEventListener('change', applyMotionPreference)
+  applyMotionPreference()
+  void loadQuestionStats()
+})
+
+onUnmounted(() => {
+  motionPreference?.removeEventListener('change', applyMotionPreference)
+  countAnimations.forEach((frame) => window.cancelAnimationFrame(frame))
+  countAnimations.clear()
+})
 
 const stats = computed(() => [
-  ['96', t('home.stats.prompts')],
-  ['9', t('home.stats.topics')],
+  [questionCount.value === null ? '—' : String(displayedQuestionCount.value), t('home.stats.prompts')],
+  [topicCount.value === null ? '—' : String(displayedTopicCount.value), t('home.stats.topics')],
   ['0', t('home.stats.cost')],
-  ['4', t('home.stats.dimensions')]
+  [String(displayedDimensions.value), t('home.stats.dimensions')]
 ])
 
 const workflow = computed(() => [
@@ -45,19 +173,50 @@ const topics = [
     <PublicHeader />
     <main>
       <section class="home-hero">
-        <img src="/images/tawep-report-preview.png" alt="TAWEP evaluation report with score breakdown and prioritized feedback" />
-        <div class="home-hero-shade" aria-hidden="true"></div>
-        <div class="container home-hero-content intro-fade intro-fade-1">
-          <p class="home-offer"><Check :size="16" />{{ t('home.offer') }}</p>
-          <h1>{{ t('home.title') }}</h1>
-          <p class="home-lead">{{ t('home.lead') }}</p>
-          <div class="hero-actions">
-            <router-link to="/questionbank" class="btn primary home-primary-cta">
-              {{ t('home.start') }}<ArrowRight :size="18" />
-            </router-link>
-            <router-link to="/examplereport" class="btn home-report-link">{{ t('home.example') }}</router-link>
+        <div class="container home-hero-layout intro-fade intro-fade-1">
+          <div class="home-hero-copy">
+            <p class="home-offer"><Check :size="16" />{{ t('home.offer', { count: questionCount === null ? '—' : displayedQuestionCount }) }}</p>
+            <h1>{{ t('home.title') }}</h1>
+            <p class="home-lead">{{ t('home.lead') }}</p>
+            <div class="hero-actions">
+              <router-link to="/questionbank" class="btn primary home-primary-cta">
+                {{ t('home.start') }}<ArrowRight :size="18" />
+              </router-link>
+              <router-link to="/examplereport" class="btn home-report-link">{{ t('home.example') }}</router-link>
+            </div>
+            <p class="home-no-card">{{ t('home.noCard') }}</p>
           </div>
-          <p class="home-no-card">{{ t('home.noCard') }}</p>
+
+          <figure class="home-demo">
+            <video
+              :key="demoSources.mp4"
+              ref="demoVideo"
+              class="home-demo-video"
+              :aria-label="demoCopy.label"
+              :autoplay="!prefersReducedMotion"
+              muted
+              loop
+              playsinline
+              preload="auto"
+              :poster="demoSources.poster"
+              @play="demoPlaying = true"
+              @pause="demoPlaying = false"
+              @loadeddata="!prefersReducedMotion && playDemo()"
+            >
+              <source :src="demoSources.webm" type="video/webm" />
+              <source :src="demoSources.mp4" type="video/mp4" />
+            </video>
+            <button
+              type="button"
+              class="home-demo-control"
+              :aria-label="demoPlaying ? demoCopy.pause : demoCopy.play"
+              :title="demoPlaying ? demoCopy.pause : demoCopy.play"
+              @click="toggleDemoPlayback"
+            >
+              <Pause v-if="demoPlaying" :size="17" />
+              <Play v-else :size="17" />
+            </button>
+          </figure>
         </div>
       </section>
 
@@ -86,6 +245,12 @@ const topics = [
 
       <section class="home-report-band">
         <div class="container home-report-layout intro-fade intro-fade-3">
+          <div class="report-layer-list">
+            <article v-for="layer in reportLayers" :key="layer.title">
+              <component :is="layer.icon" :size="20" />
+              <div><h3>{{ layer.title }}</h3><p>{{ layer.body }}</p></div>
+            </article>
+          </div>
           <div class="report-band-focus">
             <p class="eyebrow">{{ t('home.report.overline') }}</p>
             <h2>{{ t('home.report.title') }}</h2>
@@ -94,12 +259,6 @@ const topics = [
               {{ t('home.report.open') }}<ArrowRight :size="17" />
             </router-link>
           </div>
-          <div class="report-layer-list">
-            <article v-for="layer in reportLayers" :key="layer.title">
-              <component :is="layer.icon" :size="20" />
-              <div><h3>{{ layer.title }}</h3><p>{{ layer.body }}</p></div>
-            </article>
-          </div>
         </div>
       </section>
 
@@ -107,7 +266,10 @@ const topics = [
         <div class="home-section-intro">
           <p class="eyebrow">{{ t('home.bank.overline') }}</p>
           <h2>{{ t('home.bank.title') }}</h2>
-          <p>{{ t('home.bank.body') }}</p>
+          <p>{{ t('home.bank.body', {
+            count: questionCount === null ? '—' : displayedQuestionCount,
+            topics: topicCount === null ? '—' : displayedTopicCount
+          }) }}</p>
           <router-link class="text-link" to="/questionbank">
             {{ t('home.bank.browse') }}<ArrowRight :size="17" />
           </router-link>
@@ -129,5 +291,6 @@ const topics = [
         </div>
       </section>
     </main>
+    <SiteFooter />
   </div>
 </template>

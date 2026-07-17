@@ -252,3 +252,12 @@ async def get_database_question_by_no(session: AsyncSession, question_no: int) -
 async def list_database_topics(session: AsyncSession) -> list[str]:
     statement = select(Topic.name_en).order_by(Topic.sort_order, Topic.name_en)
     return list((await session.scalars(statement)).all())
+
+
+async def get_question_bank_stats(session: AsyncSession) -> tuple[int, int]:
+    accepted = Question.status == ReviewStatus.accepted
+    question_count = await session.scalar(select(func.count(Question.id)).where(accepted))
+    topic_count = await session.scalar(
+        select(func.count(func.distinct(Question.topic_id))).where(accepted)
+    )
+    return int(question_count or 0), int(topic_count or 0)

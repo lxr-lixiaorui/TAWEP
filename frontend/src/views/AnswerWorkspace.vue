@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { CircleHelp, MessageSquare, TrendingDown, TrendingUp, X } from '@lucide/vue'
+import { Check, CircleHelp, Copy, Link2, MessageSquare, TrendingDown, TrendingUp, X } from '@lucide/vue'
 import { useMessage, useNotification } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -8,14 +8,16 @@ import AppShell from '../components/AppShell.vue'
 import { apiDownload, apiGet, apiPost } from '../api/client'
 import { useAppStore } from '../stores/app'
 
-const props = defineProps<{ activeTab?: string }>()
+const props = defineProps<{ activeTab?: string; publicShare?: boolean }>()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 const notification = useNotification()
 const appStore = useAppStore()
 const { t } = useI18n()
-const sessionId = String(route.params.sessionId)
+const sessionId = String(route.params.sessionId ?? '')
+const shareToken = String(route.params.shareToken ?? '')
+const isPublicShare = Boolean(props.publicShare)
 const isExampleSession = sessionId === '00000000-0000-4000-8000-000000000008'
 const active = ref(props.activeTab || 'answer')
 const session = ref<any | null>(null)
@@ -33,11 +35,17 @@ const feedbackComment = ref('')
 const feedbackConsent = ref(false)
 const feedbackStatus = ref<{ submitted: boolean; feedback_type?: string; created_at?: string }>({ submitted: false })
 const feedbackStatusLoaded = ref(false)
+const shareGenerating = ref(false)
+const shareCopied = ref(false)
+const shareUrl = ref('')
+const publicMeta = ref<{ owner_alias: string; generated_at: string } | null>(null)
 const timeLeft = ref<number | null>(null)
 const hideTimer = ref(false)
+const timerWarningActive = ref(false)
 const hideWordCount = ref(false)
 const answerInput = ref<HTMLTextAreaElement | null>(null)
 let timerId: number | undefined
+let timerWarningTimeoutId: number | undefined
 let evaluationPollId: number | undefined
 let evaluationRequestActive = false
 let completionNotified = false
@@ -57,7 +65,6 @@ const timerLabel = computed(() => {
   const seconds = timeLeft.value % 60
   return `00:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 })
-const timerUrgent = computed(() => timeLeft.value !== null && timeLeft.value <= 300)
 const evaluationActive = computed(() => ['queued', 'evaluating', 'retrying'].includes(evaluation.value?.status))
 const evaluationFailed = computed(() => evaluation.value?.status === 'failed')
 const partialReport = computed(() => evaluation.value?.partial_report ?? {})
@@ -111,8 +118,16 @@ const grammarIssueCount = computed(() => displayGrammar.value.filter((item: any)
 const answerForAnalysis = computed(() => submittedAnswer.value || answer.value || session.value?.answer_text || displayGrammar.value.map((item: any) => item.original_text).filter(Boolean).join(' '))
 const spellingIssueCount = computed(() => displayGrammar.value.filter((item: any) => item.issue_type === 'spelling').length)
 const annotatedAnswer = computed(() => buildAnnotatedAnswer(answerForAnalysis.value, displayGrammar.value))
-const grammarAnalysisPath = computed(() => '/' + sessionId + '/grammaranalysis')
-const rewritePath = computed(() => '/' + sessionId + '/rewrite')
+const workspaceBasePath = computed(() => isPublicShare ? `/share/${shareToken}` : `/${sessionId}`)
+const grammarAnalysisPath = computed(() => `${workspaceBasePath.value}/grammaranalysis`)
+const rewritePath = computed(() => `${workspaceBasePath.value}/rewrite`)
+const publicGeneratedLabel = computed(() => {
+  if (!publicMeta.value) return ''
+  const locale = appStore.locale === 'zh' ? 'zh-CN' : 'en'
+  const generatedAt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' })
+    .format(new Date(publicMeta.value.generated_at))
+  return t('report.share.attribution', { alias: publicMeta.value.owner_alias, time: generatedAt })
+})
 const rewriteSections = computed(() => {
   const sections = displayReport.value?.rewrite_comparison?.sections
   if (Array.isArray(sections) && sections.length) return sections
@@ -133,7 +148,7 @@ const canSubmitFeedback = computed(() => Boolean(
 ))
 
 async function loadFeedbackStatus() {
-  if (isExampleSession || !report.value) return
+  if (isExampleSession || isPublicShare || !report.value) return
   try {
     feedbackStatus.value = await apiGet(`/sessions/${sessionId}/feedback`)
   } catch {
@@ -141,6 +156,36 @@ async function loadFeedbackStatus() {
   } finally {
     feedbackStatusLoaded.value = true
   }
+}
+
+async function generateShareLink() {
+  if (shareGenerating.value || !report.value) return
+  shareGenerating.value = true
+  try {
+    const payload: any = await apiPost(`/sessions/${sessionId}/share`)
+    shareUrl.value = new URL(payload.path, window.location.origin).href
+    shareCopied.value = false
+    message.success(t('report.share.generated'))
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : t('report.share.failed'))
+  } finally {
+    shareGenerating.value = false
+  }
+}
+
+async function copyShareLink() {
+  if (!shareUrl.value) return
+  try {
+    await navigator.clipboard.writeText(shareUrl.value)
+    shareCopied.value = true
+    message.success(t('report.share.copied'))
+  } catch {
+    message.error(t('report.share.copyFailed'))
+  }
+}
+
+function selectShareUrl(event: FocusEvent) {
+  if (event.target instanceof HTMLInputElement) event.target.select()
 }
 
 function openFeedback() {
@@ -177,9 +222,9 @@ function sectionReady(name: string) {
   return Boolean(report.value) || availableSections.value.has(name)
 }
 
-function avatarFor(role: string, index = 0) {
-  if (role === 'professor') return '/static/images/img_teacher_diaz.png'
-  return index === 0 ? '/static/images/img_student_paul.png' : '/static/images/img_student_kelly.png'
+function avatarClass(role: string, index = 0) {
+  if (role === 'professor') return 'professor'
+  return index === 0 ? 'student-one' : 'student-two'
 }
 
 function stopTimer() {
@@ -187,8 +232,22 @@ function stopTimer() {
     window.clearInterval(timerId)
     timerId = undefined
   }
+  if (timerWarningTimeoutId) {
+    window.clearTimeout(timerWarningTimeoutId)
+    timerWarningTimeoutId = undefined
+  }
+  timerWarningActive.value = false
   timeLeft.value = null
   hideTimer.value = true
+}
+
+function showOneMinuteWarning() {
+  timerWarningActive.value = true
+  if (timerWarningTimeoutId) window.clearTimeout(timerWarningTimeoutId)
+  timerWarningTimeoutId = window.setTimeout(() => {
+    timerWarningActive.value = false
+    timerWarningTimeoutId = undefined
+  }, 1200)
 }
 
 function startTimer() {
@@ -197,6 +256,7 @@ function startTimer() {
   timerId = window.setInterval(() => {
     if (timeLeft.value === null) return
     timeLeft.value = Math.max(0, timeLeft.value - 1)
+    if (timeLeft.value === 60) showOneMinuteWarning()
     if (timeLeft.value === 0) {
       stopTimer()
       if (!answer.value.includes('AllowOvertime:True')) {
@@ -227,6 +287,10 @@ async function submit() {
 }
 
 async function handleTopAction() {
+  if (isPublicShare) {
+    await goToTab('report')
+    return
+  }
   if (report.value || evaluation.value) {
     active.value = 'report'
     await router.replace(`/${sessionId}/report`)
@@ -245,7 +309,7 @@ async function goToTab(tab: string) {
   }[tab]
   if (!suffix) return
   active.value = tab
-  await router.push(`/${sessionId}/${suffix}`)
+  await router.push(`${workspaceBasePath.value}/${suffix}`)
 }
 
 function stopEvaluationPolling() {
@@ -428,6 +492,18 @@ function buildRewriteParts(text: string, highlights: any[], side: 'original' | '
 }
 
 onMounted(async () => {
+  if (isPublicShare) {
+    const shared: any = await apiGet(`/shared-reports/${encodeURIComponent(shareToken)}`)
+    session.value = shared.session
+    question.value = shared.question
+    report.value = shared.report
+    grammar.value = shared.grammar ?? []
+    answer.value = shared.session?.answer_text || ''
+    submittedAnswer.value = answer.value
+    publicMeta.value = { owner_alias: shared.owner_alias, generated_at: shared.generated_at }
+    stopTimer()
+    return
+  }
   session.value = await apiGet(`/sessions/${sessionId}`)
   question.value = await apiGet(`/questions/${session.value.question_no}`)
   answer.value = session.value.answer_text || ''
@@ -445,6 +521,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (timerId) window.clearInterval(timerId)
+  if (timerWarningTimeoutId) window.clearTimeout(timerWarningTimeoutId)
   stopEvaluationPolling()
 })
 
@@ -456,6 +533,7 @@ watch(() => props.activeTab, (next) => {
 
 watch(active, async (next) => {
   if (next !== 'answer') stopTimer()
+  if (isPublicShare) return
   if (next === 'report' && !report.value && !evaluation.value) {
     await loadEvaluationForSession()
   }
@@ -480,7 +558,7 @@ watch(report, (next) => {
       <div class="toefl-sectionbar">
         <span>Section 1 of 1</span>
         <div v-if="!report" class="toefl-section-actions">
-          <span v-if="!hideTimer" class="toefl-time" :class="{ urgent: timerUrgent }">{{ timerLabel }}</span>
+          <span v-if="!hideTimer" class="toefl-time" :class="{ 'one-minute-warning': timerWarningActive }">{{ timerLabel }}</span>
           <button class="toefl-link" @click="hideTimer = !hideTimer">{{ hideTimer ? 'Show Timer' : 'Hide Timer' }}</button>
         </div>
         <span v-else class="toefl-ready">Report is ready</span>
@@ -500,7 +578,7 @@ watch(report, (next) => {
           </div>
 
           <div v-if="professorMessage" class="toefl-professor">
-            <img :src="avatarFor('professor')" :alt="professorMessage.speaker_name" class="toefl-avatar large" />
+            <span class="toefl-avatar large professor" aria-hidden="true"></span>
             <strong>{{ professorMessage.speaker_name }}</strong>
           </div>
 
@@ -511,7 +589,7 @@ watch(report, (next) => {
           <div class="toefl-students">
             <article v-for="(msg, index) in studentMessages" :key="msg.sort_order" class="toefl-student-row">
               <div class="toefl-person">
-                <img :src="avatarFor(msg.speaker_role, index)" :alt="msg.speaker_name" class="toefl-avatar" />
+                <span class="toefl-avatar" :class="avatarClass(msg.speaker_role, index)" aria-hidden="true"></span>
                 <span>{{ msg.speaker_name }}</span>
               </div>
               <p>{{ msg.content }}</p>
@@ -520,7 +598,7 @@ watch(report, (next) => {
 
           <div class="toefl-editor-shell">
             <div class="toefl-editor-toolbar">
-              <div class="toefl-edit-buttons">
+              <div v-if="!isPublicShare" class="toefl-edit-buttons">
                 <button class="toefl-tool active" @click="runEditorCommand('cut')">Cut</button>
                 <button class="toefl-tool" @click="pasteFromClipboard">Paste</button>
                 <button class="toefl-tool" @click="runEditorCommand('undo')">Undo</button>
@@ -535,24 +613,26 @@ watch(report, (next) => {
               ref="answerInput"
               v-model="answer"
               class="toefl-textarea"
+              :readonly="isPublicShare"
               placeholder="Type your response here."
             ></textarea>
-            <div class="toefl-editor-footer">
+            <div v-if="!isPublicShare" class="toefl-editor-footer">
               <button class="btn ghost small" @click="discardAndQuit">Discard and Quit</button>
             </div>
           </div>
         </main>
       </div>
     </div>
+    <footer v-if="publicMeta" class="shared-report-attribution">{{ publicGeneratedLabel }}</footer>
   </section>
 
-  <AppShell v-else>
+  <AppShell v-else :public-view="isPublicShare">
     <nav class="tabs">
       <button class="tab-btn" :class="{ active: active === 'answer' }" @click="goToTab('answer')">{{ t('report.tabs.answer') }}</button>
       <button class="tab-btn" :class="{ active: active === 'report' }" @click="goToTab('report')">{{ t('report.tabs.report') }}</button>
       <button class="tab-btn" :class="{ active: active === 'rewrite' }" @click="goToTab('rewrite')">{{ t('rewrite.tab') }}</button>
       <button class="tab-btn" :class="{ active: active === 'grammar' }" @click="goToTab('grammar')">{{ t('report.tabs.grammar') }}</button>
-      <button class="tab-btn" :class="{ active: active === 'download' }" @click="goToTab('download')">{{ t('report.tabs.download') }}</button>
+      <button v-if="!isPublicShare" class="tab-btn" :class="{ active: active === 'download' }" @click="goToTab('download')">{{ t('report.tabs.download') }}</button>
     </nav>
 
     <article v-if="active === 'report'" class="report-modern">
@@ -705,7 +785,25 @@ watch(report, (next) => {
         <router-link class="btn primary" :to="rewritePath">{{ t('rewrite.open') }}</router-link>
       </section>
 
-      <section v-if="report && !isExampleSession && feedbackStatusLoaded" class="report-feedback-entry">
+      <section v-if="report && !isExampleSession && !isPublicShare" class="report-share-entry">
+        <div class="report-share-heading">
+          <Link2 :size="20" />
+          <span><strong>{{ t('report.share.title') }}</strong><small>{{ t('report.share.body') }}</small></span>
+        </div>
+        <button v-if="!shareUrl" class="btn" :disabled="shareGenerating" @click="generateShareLink">
+          <Link2 :size="16" />{{ shareGenerating ? t('report.share.generating') : t('report.share.generate') }}
+        </button>
+        <div v-else class="report-share-result">
+          <input class="input" :value="shareUrl" readonly :aria-label="t('report.share.urlLabel')" @focus="selectShareUrl" />
+          <button class="btn" @click="copyShareLink">
+            <Check v-if="shareCopied" :size="16" /><Copy v-else :size="16" />
+            {{ shareCopied ? t('report.share.copied') : t('report.share.copy') }}
+          </button>
+        </div>
+        <p>{{ t('report.share.notice') }}</p>
+      </section>
+
+      <section v-if="report && !isExampleSession && !isPublicShare && feedbackStatusLoaded" class="report-feedback-entry">
         <div>
           <MessageSquare :size="20" />
           <span><strong>{{ feedbackStatus.submitted ? t('report.feedback.submittedTitle') : t('report.feedback.title') }}</strong><small>{{ feedbackStatus.submitted ? t('report.feedback.submittedBody') : t('report.feedback.body') }}</small></span>
@@ -818,5 +916,6 @@ watch(report, (next) => {
       <button v-if="report" class="btn primary" @click="downloadReport">{{ t('report.downloadReport') }}</button>
       <p v-else class="muted">{{ t('report.downloadWaiting') }}</p>
     </section>
+    <footer v-if="publicMeta" class="shared-report-attribution">{{ publicGeneratedLabel }}</footer>
   </AppShell>
 </template>

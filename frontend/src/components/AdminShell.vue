@@ -24,7 +24,9 @@ async function logout() {
           <router-link to="/manage/questionbank">Question Bank</router-link>
           <router-link to="/manage/reviewquestion">Review Uploads</router-link>
           <router-link to="/manage/feedback">{{ t('adminFeedback.nav') }}</router-link>
+          <router-link to="/manage/outcomes">Reported Improvement</router-link>
           <router-link to="/manage/accounts">Accounts</router-link>
+          <router-link to="/manage/settings">Platform Settings</router-link>
         </nav>
         <div class="admin-side-actions">
           <router-link class="btn ghost small icon-btn" to="/dashboard" title="Back to site" aria-label="Back to site"><ArrowLeft :size="16" /></router-link>

@@ -10,8 +10,16 @@ __pycache__/
 .env
 
 # Frontend dependencies and build output
-frontend/node_modules/
-frontend/dist/
+**/node_modules/
+**/dist/
+
+# Generated HyperFrames previews and QA artifacts
+videos/**/renders/
+videos/**/snapshots/
+videos/**/capture/qa-final/
+videos/**/capture/screenshots/
+videos/**/doctor-output.txt
+videos/**/homepage-*.png
 
 # Generated report artifacts
 static/table/Record/

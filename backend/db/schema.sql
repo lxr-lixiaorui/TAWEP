@@ -36,6 +36,9 @@ CREATE TABLE IF NOT EXISTS users (
     last_login_at timestamptz,
     password_changed_at timestamptz,
     token_version integer NOT NULL DEFAULT 0,
+    baseline_writing_score integer CHECK (baseline_writing_score BETWEEN 0 AND 30),
+    planned_exam_date date,
+    exam_reminder_shown_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -43,7 +46,18 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at timestamptz;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at timestamptz;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamptz;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version integer NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS baseline_writing_score integer;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS planned_exam_date date;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS exam_reminder_shown_at timestamptz;
 ALTER TABLE users ALTER COLUMN status SET DEFAULT 'pending';
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ck_users_baseline_writing_score') THEN
+        ALTER TABLE users ADD CONSTRAINT ck_users_baseline_writing_score
+            CHECK (baseline_writing_score BETWEEN 0 AND 30);
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS auth_sessions (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -94,6 +108,39 @@ CREATE INDEX IF NOT EXISTS ix_email_outbox_status ON email_outbox (status);
 
 CREATE INDEX IF NOT EXISTS ix_users_email ON users (email);
 
+CREATE TABLE IF NOT EXISTS user_consent_events (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    consent_key varchar(80) NOT NULL,
+    document_version varchar(40) NOT NULL,
+    granted boolean NOT NULL,
+    resource_type varchar(40),
+    resource_id uuid,
+    ip_address varchar(64),
+    user_agent varchar(500),
+    details jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_user_consent_events_user_id ON user_consent_events (user_id);
+CREATE INDEX IF NOT EXISTS ix_user_consent_events_key ON user_consent_events (consent_key);
+
+CREATE TABLE IF NOT EXISTS user_ai_configs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    enabled boolean NOT NULL DEFAULT false,
+    provider_name varchar(80) NOT NULL DEFAULT 'OpenAI-compatible',
+    endpoint varchar(500) NOT NULL,
+    model_name varchar(160) NOT NULL,
+    encrypted_api_key text NOT NULL,
+    key_last_four varchar(4) NOT NULL,
+    consent_version varchar(40) NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ix_user_ai_configs_user_id ON user_ai_configs (user_id);
+
 CREATE TABLE IF NOT EXISTS topics (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     key varchar(80) UNIQUE NOT NULL,
@@ -136,6 +183,32 @@ CREATE TABLE IF NOT EXISTS question_messages (
     sort_order integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS question_skill_profiles (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    question_id uuid NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    constraint_density integer NOT NULL DEFAULT 3 CHECK (constraint_density BETWEEN 1 AND 5),
+    scope_width integer NOT NULL DEFAULT 3 CHECK (scope_width BETWEEN 1 AND 5),
+    perspective_gap integer NOT NULL DEFAULT 3 CHECK (perspective_gap BETWEEN 1 AND 5),
+    position_relation varchar(40) NOT NULL DEFAULT 'independent',
+    reasoning_modes jsonb NOT NULL DEFAULT '[]'::jsonb,
+    stakeholder_count integer NOT NULL DEFAULT 2 CHECK (stakeholder_count BETWEEN 1 AND 5),
+    argument_steps integer NOT NULL DEFAULT 3 CHECK (argument_steps BETWEEN 1 AND 5),
+    abstractness integer NOT NULL DEFAULT 3 CHECK (abstractness BETWEEN 1 AND 5),
+    knowledge_load integer NOT NULL DEFAULT 2 CHECK (knowledge_load BETWEEN 1 AND 5),
+    lexical_load integer NOT NULL DEFAULT 3 CHECK (lexical_load BETWEEN 1 AND 5),
+    content_opportunity numeric(3, 2) NOT NULL DEFAULT 3 CHECK (content_opportunity BETWEEN 1 AND 5),
+    perspective_opportunity numeric(3, 2) NOT NULL DEFAULT 3 CHECK (perspective_opportunity BETWEEN 1 AND 5),
+    structure_opportunity numeric(3, 2) NOT NULL DEFAULT 3 CHECK (structure_opportunity BETWEEN 1 AND 5),
+    annotation_source varchar(32) NOT NULL DEFAULT 'heuristic',
+    confidence numeric(3, 2) NOT NULL DEFAULT 0.5 CHECK (confidence BETWEEN 0 AND 1),
+    profile_version varchar(40) NOT NULL DEFAULT 'v1',
+    annotated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT uq_question_skill_profiles_question_id UNIQUE (question_id)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ix_question_skill_profiles_question_id
+    ON question_skill_profiles (question_id);
+
 CREATE TABLE IF NOT EXISTS uploaded_question_reviews (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     question_id uuid NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
@@ -168,6 +241,8 @@ CREATE TABLE IF NOT EXISTS evaluation_jobs (
     status varchar(32) NOT NULL DEFAULT 'queued',
     stage varchar(48) NOT NULL DEFAULT 'queued',
     report_locale varchar(16) NOT NULL DEFAULT 'en',
+    api_source varchar(24) NOT NULL DEFAULT 'platform',
+    ai_config_id uuid REFERENCES user_ai_configs(id) ON DELETE SET NULL,
     partial_result jsonb NOT NULL DEFAULT '{}'::jsonb,
     attempt integer NOT NULL DEFAULT 0,
     max_attempts integer NOT NULL DEFAULT 3,
@@ -185,6 +260,9 @@ CREATE TABLE IF NOT EXISTS evaluation_jobs (
     CONSTRAINT uq_evaluation_jobs_session_id UNIQUE (session_id),
     CONSTRAINT ck_evaluation_jobs_status CHECK (status IN ('queued', 'evaluating', 'retrying', 'completed', 'failed'))
 );
+
+ALTER TABLE evaluation_jobs ADD COLUMN IF NOT EXISTS api_source varchar(24) NOT NULL DEFAULT 'platform';
+ALTER TABLE evaluation_jobs ADD COLUMN IF NOT EXISTS ai_config_id uuid REFERENCES user_ai_configs(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS ix_evaluation_jobs_claim
     ON evaluation_jobs (status, next_attempt_at, created_at);
@@ -204,6 +282,21 @@ CREATE TABLE IF NOT EXISTS evaluation_reports (
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_evaluation_reports_session_id
     ON evaluation_reports (session_id);
+
+CREATE TABLE IF NOT EXISTS report_shares (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    report_id uuid NOT NULL REFERENCES evaluation_reports(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash varchar(64) UNIQUE NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    revoked_at timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS ix_report_shares_report_id ON report_shares (report_id);
+CREATE INDEX IF NOT EXISTS ix_report_shares_user_id ON report_shares (user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ix_report_shares_token_hash ON report_shares (token_hash);
+CREATE INDEX IF NOT EXISTS ix_report_shares_active_token
+    ON report_shares (token_hash) WHERE revoked_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS report_feedback (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -264,11 +357,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_language_metric_report_key
 
 CREATE TABLE IF NOT EXISTS credit_wallets (
     user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    balance integer NOT NULL DEFAULT 180,
-    weekly_limit integer NOT NULL DEFAULT 60,
+    balance integer NOT NULL DEFAULT 45,
+    weekly_limit integer NOT NULL DEFAULT 0,
     weekly_used integer NOT NULL DEFAULT 0,
     weekly_window_start timestamptz NOT NULL DEFAULT now(),
-    total_planned_credit integer NOT NULL DEFAULT 180
+    total_planned_credit integer NOT NULL DEFAULT 45
 );
 
 CREATE TABLE IF NOT EXISTS credit_ledger (
@@ -277,6 +370,7 @@ CREATE TABLE IF NOT EXISTS credit_ledger (
     delta integer NOT NULL,
     reason varchar(120) NOT NULL,
     session_id uuid REFERENCES answer_sessions(id) ON DELETE CASCADE,
+    question_id uuid REFERENCES questions(id) ON DELETE SET NULL,
     admin_id uuid REFERENCES users(id) ON DELETE SET NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT uq_credit_ledger_session_reason UNIQUE (session_id, reason)
@@ -285,15 +379,39 @@ CREATE TABLE IF NOT EXISTS credit_ledger (
 CREATE UNIQUE INDEX IF NOT EXISTS uq_credit_ledger_session_reason
     ON credit_ledger (session_id, reason);
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_credit_ledger_question_reward
+    ON credit_ledger (question_id, reason)
+    WHERE question_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_credit_ledger_initial_credit
+    ON credit_ledger (user_id, reason)
+    WHERE reason = 'initial_credit';
+
 CREATE TABLE IF NOT EXISTS inbox_messages (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title varchar(160) NOT NULL,
     body text NOT NULL,
     type varchar(40) NOT NULL DEFAULT 'system',
+    action_url varchar(300),
+    action_label varchar(100),
     read_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS user_exam_results (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    exam_date date NOT NULL,
+    writing_score integer NOT NULL CHECK (writing_score BETWEEN 0 AND 30),
+    baseline_writing_score integer CHECK (baseline_writing_score BETWEEN 0 AND 30),
+    improvement integer,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT uq_user_exam_results_user_date UNIQUE (user_id, exam_date)
+);
+
+CREATE INDEX IF NOT EXISTS ix_user_exam_results_user_id ON user_exam_results (user_id);
 
 CREATE TABLE IF NOT EXISTS legal_documents (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -305,6 +423,17 @@ CREATE TABLE IF NOT EXISTS legal_documents (
 );
 
 CREATE INDEX IF NOT EXISTS ix_legal_documents_slug ON legal_documents (slug);
+
+CREATE TABLE IF NOT EXISTS platform_settings (
+    key varchar(120) PRIMARY KEY,
+    value jsonb NOT NULL DEFAULT '{}'::jsonb,
+    updated_by uuid REFERENCES users(id) ON DELETE SET NULL,
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+INSERT INTO platform_settings (key, value)
+VALUES ('legal.cross_border', '{"visible": false, "activation": 0, "consent_version": null}'::jsonb)
+ON CONFLICT (key) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS admin_audit_logs (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

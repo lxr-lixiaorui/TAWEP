@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>TAWEP timed practice</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          overflow: hidden;
+          container-type: size;
+          color: #1f2329;
+        }
+
+        .frame-01-answer-timer-ground {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          background: #ffffff;
+        }
+
+        .frame-01-answer-timer-stage {
+          position: absolute;
+          inset: 0 auto auto 0;
+          width: 1920px;
+          height: 896px;
+          overflow: hidden;
+        }
+
+        .frame-01-answer-timer-camera {
+          position: absolute;
+          inset: 0;
+          width: 1920px;
+          height: 1080px;
+          transform-origin: 50% 0%;
+          will-change: transform, opacity;
+        }
+
+        .frame-01-answer-timer-screenshot {
+          display: block;
+          width: 1920px;
+          height: 1080px;
+          object-fit: contain;
+          user-select: none;
+        }
+
+        .frame-01-answer-timer-top-action {
+          position: absolute;
+          top: 37px;
+          left: 1647px;
+          display: flex;
+          width: 91px;
+          height: 35px;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          border: 1px solid #dceeed;
+          border-radius: 100px;
+          background: #ffffff;
+          color: #006d6f;
+          font-size: 13px;
+          font-weight: 800;
+          line-height: 1;
+        }
+
+        .frame-01-answer-timer-focus {
+          position: absolute;
+          top: 79px;
+          left: 165px;
+          width: 1589px;
+          height: 36px;
+          border-top: 1px solid rgba(0, 109, 111, 0.18);
+          border-bottom: 2px solid rgba(0, 109, 111, 0.32);
+          background: rgba(0, 109, 111, 0.08);
+          transform-origin: 0% 50%;
+          will-change: transform, opacity;
+        }
+
+        .frame-01-answer-timer-live-state {
+          position: absolute;
+          top: 80px;
+          left: 1486px;
+          display: flex;
+          width: 268px;
+          height: 34px;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 15px;
+          padding-right: 16px;
+          background: #f7fafa;
+          color: #243033;
+          font-size: 12px;
+          line-height: 1;
+          white-space: nowrap;
+          will-change: opacity;
+        }
+
+        .frame-01-answer-timer-clock {
+          display: inline-block;
+          min-width: 66px;
+          color: #243033;
+          font-variant-numeric: tabular-nums;
+          font-weight: 800;
+          text-align: right;
+          will-change: opacity, color;
+        }
+
+        .frame-01-answer-timer-hide {
+          color: #006d6f;
+          font-weight: 700;
+        }
+      </style>
+
+      <div data-hf-id="hf-mc5g" id="root" data-composition-id="01-answer-timer" data-width="1920" data-height="1080" data-duration="2.5">
+        <div data-hf-id="hf-nd2x" id="frame-01-answer-timer-ground" class="clip frame-01-answer-timer-ground" data-start="0" data-duration="2.5" data-track-index="0"></div>
+
+        <div data-hf-id="hf-bc6e" id="frame-01-answer-timer-stage" class="clip frame-01-answer-timer-stage" data-start="0" data-duration="2.5" data-track-index="1">
+          <div data-hf-id="hf-asay" data-layout-allow-overflow id="frame-01-answer-timer-camera" class="frame-01-answer-timer-camera">
+            <img data-hf-id="hf-coba" class="frame-01-answer-timer-screenshot" src="capture/assets/answer.png" alt="TAWEP timed answer workspace" draggable="false">
+
+            <div data-hf-id="hf-uihw" class="frame-01-answer-timer-top-action" aria-hidden="true">
+              <span data-hf-id="hf-rsih">Submit</span><span data-hf-id="hf-cm31">&gt;</span>
+            </div>
+
+            <div data-hf-id="hf-o1t1" id="frame-01-answer-timer-focus" class="frame-01-answer-timer-focus" aria-hidden="true"></div>
+
+            <div data-hf-id="hf-1v69" id="frame-01-answer-timer-live-state" class="frame-01-answer-timer-live-state" aria-label="One minute remaining">
+              <span data-hf-id="hf-7fj0" id="frame-01-answer-timer-clock" class="frame-01-answer-timer-clock">00:01:00</span>
+              <span data-hf-id="hf-8s3l" class="frame-01-answer-timer-hide">Hide Timer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        window.__timelines = window.__timelines || {};
+
+        const frame01Timeline = gsap.timeline({ paused: true });
+        const frame01Camera = document.getElementById("frame-01-answer-timer-camera");
+        const frame01Focus = document.getElementById("frame-01-answer-timer-focus");
+        const frame01LiveState = document.getElementById("frame-01-answer-timer-live-state");
+        const frame01Clock = document.getElementById("frame-01-answer-timer-clock");
+
+        frame01Timeline.fromTo(
+          frame01Camera,
+          { scale: 0.985, y: 14, opacity: 0 },
+          { scale: 1.06, y: 0, opacity: 1, duration: 0.7, ease: "power3.out" },
+          0,
+        );
+
+        frame01Timeline.fromTo(
+          frame01Focus,
+          { scaleX: 0, opacity: 0 },
+          { scaleX: 1, opacity: 1, duration: 0.38, ease: "power3.out" },
+          0.7,
+        );
+
+        frame01Timeline.fromTo(
+          frame01LiveState,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.16, ease: "power2.out" },
+          0.7,
+        );
+
+        frame01Timeline.to(
+          frame01Focus,
+          { opacity: 0.5, duration: 0.22, ease: "power2.out" },
+          1.13,
+        );
+
+        frame01Timeline.to(
+          frame01Clock,
+          { color: "#b42318", duration: 0.08, ease: "power1.out" },
+          1.32,
+        );
+        frame01Timeline.to(
+          frame01Clock,
+          { opacity: 0.42, duration: 0.1, ease: "power1.inOut" },
+          1.36,
+        );
+        frame01Timeline.to(
+          frame01Clock,
+          { opacity: 1, duration: 0.1, ease: "power1.inOut" },
+          1.47,
+        );
+        frame01Timeline.to(
+          frame01Clock,
+          { opacity: 0.42, duration: 0.1, ease: "power1.inOut" },
+          1.57,
+        );
+        frame01Timeline.to(
+          frame01Clock,
+          { opacity: 1, duration: 0.12, ease: "power1.inOut" },
+          1.68,
+        );
+
+        window.__timelines["01-answer-timer"] = frame01Timeline;
+      </script>
+    </template>
+  </body>
+</html>

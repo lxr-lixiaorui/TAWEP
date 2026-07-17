@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowRight, BookOpenText, HelpCircle, Search, Upload } from '@lucide/vue'
+import { ArrowRight, BookOpenText, Gift, HelpCircle, Search, Upload } from '@lucide/vue'
 import AppShell from '../components/AppShell.vue'
 import { apiGet } from '../api/client'
 
-const { t } = useI18n()
+const { locale, t } = useI18n()
 const filters = reactive({ difficulty: '', source: '', topic: '', exam_type: '' })
 const questions = ref<any[]>([])
 const topics = ref<string[]>([])
 const loading = ref(true)
 const loadError = ref(false)
 const totalQuestions = ref(96)
+const recommendation = ref<any | null>(null)
 
 const examTypeOptions = computed(() => [
   {
@@ -27,8 +28,17 @@ const examTypeOptions = computed(() => [
 ])
 
 const hasFilters = computed(() => Object.values(filters).some(Boolean))
-const featuredQuestion = computed(() => hasFilters.value ? null : (questions.value[0] ?? null))
-const remainingQuestions = computed(() => featuredQuestion.value ? questions.value.slice(1) : questions.value)
+const featuredQuestion = computed(() => {
+  const recommended = recommendation.value
+  if (recommended) {
+    const question = questions.value.find((item) => item.question_no === recommended.question_no)
+    if (question) return { ...question, ...recommended }
+  }
+  return questions.value[0] ?? null
+})
+const remainingQuestions = computed(() => featuredQuestion.value
+  ? questions.value.filter((item) => item.question_no !== featuredQuestion.value.question_no)
+  : questions.value)
 
 async function loadQuestions() {
   loading.value = true
@@ -39,6 +49,15 @@ async function loadQuestions() {
   })
   try {
     questions.value = await apiGet(`/questions${params.toString() ? `?${params.toString()}` : ''}`)
+    const recommendationParams = new URLSearchParams(params)
+    recommendationParams.set('limit', '1')
+    recommendationParams.set('locale', locale.value.startsWith('zh') ? 'zh' : 'en')
+    try {
+      const result = await apiGet<any[]>(`/questions/recommendations?${recommendationParams.toString()}`)
+      recommendation.value = result[0] ?? null
+    } catch {
+      recommendation.value = null
+    }
     if (!hasFilters.value) totalQuestions.value = questions.value.length || totalQuestions.value
   } catch {
     loadError.value = true
@@ -69,6 +88,10 @@ onMounted(async () => {
   }
   await loadQuestions()
 })
+
+watch(locale, () => {
+  void loadQuestions()
+})
 </script>
 
 <template>
@@ -79,7 +102,10 @@ onMounted(async () => {
         <h1>{{ t('bank.title') }}</h1>
         <p>{{ t('bank.subtitle') }}</p>
       </div>
-      <router-link to="/createyourown" class="btn bank-upload"><Upload :size="17" />{{ t('bank.upload') }}</router-link>
+      <div class="bank-contribute">
+        <p class="bank-upload-reward"><Gift :size="16" /><span>{{ t('bank.uploadReward') }}</span></p>
+        <router-link to="/createyourown" class="btn bank-upload"><Upload :size="17" />{{ t('bank.upload') }}</router-link>
+      </div>
     </header>
 
     <section v-if="featuredQuestion && !loading" class="bank-featured">
@@ -87,7 +113,7 @@ onMounted(async () => {
         <p><BookOpenText :size="16" />{{ t('bank.recommended') }}</p>
         <span>{{ featuredQuestion.topic }} · {{ featuredQuestion.exam_type === 'reform_2026' ? t('bank.reform') : t('bank.classic') }}</span>
         <h2>{{ featuredQuestion.summary }}</h2>
-        <small>{{ t('bank.recommendedReason') }}</small>
+        <small>{{ featuredQuestion.reason || t('bank.recommendedReason') }}</small>
       </div>
       <div class="bank-featured-action">
         <span>{{ t('bank.minutes') }}</span>

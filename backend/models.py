@@ -1,9 +1,10 @@
 import enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     Enum,
     ForeignKey,
@@ -75,9 +76,46 @@ class User(Base):
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     token_version: Mapped[int] = mapped_column(Integer, default=0)
+    baseline_writing_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    planned_exam_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    exam_reminder_shown_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
     wallet: Mapped["CreditWallet"] = relationship(back_populates="user", uselist=False, passive_deletes=True)
+
+
+class UserConsentEvent(Base):
+    __tablename__ = "user_consent_events"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    consent_key: Mapped[str] = mapped_column(String(80), index=True)
+    document_version: Mapped[str] = mapped_column(String(40))
+    granted: Mapped[bool] = mapped_column(Boolean)
+    resource_type: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    resource_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    ip_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    details: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class UserAIConfig(Base):
+    __tablename__ = "user_ai_configs"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True
+    )
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    provider_name: Mapped[str] = mapped_column(String(80), default="OpenAI-compatible")
+    endpoint: Mapped[str] = mapped_column(String(500))
+    model_name: Mapped[str] = mapped_column(String(160))
+    encrypted_api_key: Mapped[str] = mapped_column(Text())
+    key_last_four: Mapped[str] = mapped_column(String(4))
+    consent_version: Mapped[str] = mapped_column(String(40))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 class AuthSession(Base):
@@ -151,6 +189,9 @@ class Question(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
     messages: Mapped[list["QuestionMessage"]] = relationship(back_populates="question", cascade="all, delete-orphan")
+    skill_profile: Mapped["QuestionSkillProfile | None"] = relationship(
+        back_populates="question", cascade="all, delete-orphan", uselist=False
+    )
     topic: Mapped[Topic] = relationship()
 
 
@@ -165,6 +206,33 @@ class QuestionMessage(Base):
     sort_order: Mapped[int] = mapped_column(Integer)
 
     question: Mapped[Question] = relationship(back_populates="messages")
+
+
+class QuestionSkillProfile(Base):
+    __tablename__ = "question_skill_profiles"
+    __table_args__ = (UniqueConstraint("question_id", name="uq_question_skill_profiles_question_id"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), index=True)
+    constraint_density: Mapped[int] = mapped_column(Integer, default=3)
+    scope_width: Mapped[int] = mapped_column(Integer, default=3)
+    perspective_gap: Mapped[int] = mapped_column(Integer, default=3)
+    position_relation: Mapped[str] = mapped_column(String(40), default="independent")
+    reasoning_modes: Mapped[list] = mapped_column(JSONB(), default=list)
+    stakeholder_count: Mapped[int] = mapped_column(Integer, default=2)
+    argument_steps: Mapped[int] = mapped_column(Integer, default=3)
+    abstractness: Mapped[int] = mapped_column(Integer, default=3)
+    knowledge_load: Mapped[int] = mapped_column(Integer, default=2)
+    lexical_load: Mapped[int] = mapped_column(Integer, default=3)
+    content_opportunity: Mapped[float] = mapped_column(Numeric(3, 2), default=3)
+    perspective_opportunity: Mapped[float] = mapped_column(Numeric(3, 2), default=3)
+    structure_opportunity: Mapped[float] = mapped_column(Numeric(3, 2), default=3)
+    annotation_source: Mapped[str] = mapped_column(String(32), default="heuristic")
+    confidence: Mapped[float] = mapped_column(Numeric(3, 2), default=0.5)
+    profile_version: Mapped[str] = mapped_column(String(40), default="v1")
+    annotated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    question: Mapped[Question] = relationship(back_populates="skill_profile")
 
 
 class UploadedQuestionReview(Base):
@@ -203,6 +271,10 @@ class EvaluationJob(Base):
     status: Mapped[str] = mapped_column(String(32), default="queued")
     stage: Mapped[str] = mapped_column(String(48), default="queued")
     report_locale: Mapped[str] = mapped_column(String(16), default="en")
+    api_source: Mapped[str] = mapped_column(String(24), default="platform")
+    ai_config_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("user_ai_configs.id", ondelete="SET NULL"), nullable=True
+    )
     partial_result: Mapped[dict] = mapped_column(JSONB(), default=dict)
     attempt: Mapped[int] = mapped_column(Integer, default=0)
     max_attempts: Mapped[int] = mapped_column(Integer, default=3)
@@ -232,6 +304,19 @@ class EvaluationReport(Base):
     rewrite_comparison: Mapped[dict] = mapped_column(JSONB(), default=dict)
     report_html_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class ReportShare(Base):
+    __tablename__ = "report_shares"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    report_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("evaluation_reports.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class ReportFeedback(Base):
@@ -292,11 +377,11 @@ class CreditWallet(Base):
     __tablename__ = "credit_wallets"
 
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    balance: Mapped[int] = mapped_column(Integer, default=180)
-    weekly_limit: Mapped[int] = mapped_column(Integer, default=60)
+    balance: Mapped[int] = mapped_column(Integer, default=45)
+    weekly_limit: Mapped[int] = mapped_column(Integer, default=0)
     weekly_used: Mapped[int] = mapped_column(Integer, default=0)
     weekly_window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    total_planned_credit: Mapped[int] = mapped_column(Integer, default=180)
+    total_planned_credit: Mapped[int] = mapped_column(Integer, default=45)
 
     user: Mapped[User] = relationship(back_populates="wallet")
 
@@ -310,6 +395,7 @@ class CreditLedger(Base):
     delta: Mapped[int] = mapped_column(Integer)
     reason: Mapped[str] = mapped_column(String(120))
     session_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("answer_sessions.id", ondelete="CASCADE"), nullable=True)
+    question_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("questions.id", ondelete="SET NULL"), nullable=True)
     admin_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
@@ -322,8 +408,24 @@ class InboxMessage(Base):
     title: Mapped[str] = mapped_column(String(160))
     body: Mapped[str] = mapped_column(Text())
     type: Mapped[str] = mapped_column(String(40), default="system")
+    action_url: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    action_label: Mapped[str | None] = mapped_column(String(100), nullable=True)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class UserExamResult(Base):
+    __tablename__ = "user_exam_results"
+    __table_args__ = (UniqueConstraint("user_id", "exam_date", name="uq_user_exam_results_user_date"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    exam_date: Mapped[date] = mapped_column(Date)
+    writing_score: Mapped[int] = mapped_column(Integer)
+    baseline_writing_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    improvement: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 class LegalDocument(Base):
@@ -335,6 +437,17 @@ class LegalDocument(Base):
     version: Mapped[str] = mapped_column(String(40))
     content_html: Mapped[str] = mapped_column(Text())
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class PlatformSetting(Base):
+    __tablename__ = "platform_settings"
+
+    key: Mapped[str] = mapped_column(String(120), primary_key=True)
+    value: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    updated_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 class AdminAuditLog(Base):

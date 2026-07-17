@@ -1,5 +1,6 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select, update
@@ -7,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.config import get_settings
 from backend.db.session import get_db
-from backend.models import AccountToken, AuthSession, CreditWallet, InboxMessage, User, UserStatus
+from backend.models import AccountToken, AuthSession, CreditLedger, CreditWallet, InboxMessage, User, UserStatus
 from backend.schemas import (
     APIMessage,
     AuthResponse,
@@ -29,6 +30,14 @@ from backend.services.authentication import (
     verify_password,
 )
 from backend.services.email_delivery import queue_account_email
+from backend.services.consents import add_consent_event
+from backend.services.legal_documents import (
+    MODEL_IMPROVEMENT_VERSION,
+    PRIVACY_VERSION,
+    TERMS_VERSION,
+    require_version,
+)
+from backend.services.platform_settings import get_cross_border_config
 
 
 router = APIRouter()
@@ -127,10 +136,32 @@ def _auth_response(user: User, auth_session: AuthSession) -> AuthResponse:
 
 
 @router.post("/register", response_model=APIMessage, status_code=status.HTTP_202_ACCEPTED)
-async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)) -> APIMessage:
+async def register(payload: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)) -> APIMessage:
+    try:
+        require_version(payload.terms_version, TERMS_VERSION, "user agreement")
+        require_version(payload.privacy_version, PRIVACY_VERSION, "privacy policy")
+        require_version(payload.model_improvement_version, MODEL_IMPROVEMENT_VERSION, "model improvement notice")
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail={"code": "LEGAL_VERSION_CHANGED", "message": str(exc)}) from exc
+    if payload.planned_exam_date and payload.planned_exam_date < datetime.now(ZoneInfo("Asia/Hong_Kong")).date():
+        raise HTTPException(
+            status_code=422,
+            detail={"code": "INVALID_EXAM_DATE", "message": "The planned exam date cannot be in the past."},
+        )
     email = normalize_email(str(payload.email))
     encoded_password = hash_password(payload.password)
     async with db.begin():
+        cross_border = await get_cross_border_config(db)
+        if cross_border["visible"]:
+            if not payload.cross_border_accepted or not payload.cross_border_version:
+                raise HTTPException(
+                    status_code=422,
+                    detail={"code": "CROSS_BORDER_CONSENT_REQUIRED", "message": "Review and accept the current cross-border notice."},
+                )
+            try:
+                require_version(payload.cross_border_version, cross_border["consent_version"], "cross-border notice")
+            except ValueError as exc:
+                raise HTTPException(status_code=409, detail={"code": "LEGAL_VERSION_CHANGED", "message": str(exc)}) from exc
         user = await db.scalar(select(User).where(User.email == email).with_for_update())
         if user is None:
             user = User(
@@ -140,6 +171,8 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
                 status=UserStatus.pending,
                 preferred_locale=payload.preferred_locale,
                 theme="light",
+                baseline_writing_score=payload.baseline_writing_score,
+                planned_exam_date=payload.planned_exam_date,
             )
             db.add(user)
             await db.flush()
@@ -147,18 +180,35 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
                 CreditWallet(
                     user_id=user.id,
                     balance=settings.initial_credit,
-                    weekly_limit=settings.weekly_credit_limit,
+                    weekly_limit=0,
                     weekly_used=0,
                     weekly_window_start=now_utc(),
                     total_planned_credit=settings.initial_credit,
                 )
             )
+            db.add(CreditLedger(user_id=user.id, delta=settings.initial_credit, reason="initial_credit"))
         elif user.status == UserStatus.pending:
             user.password_hash = encoded_password
             user.alias = payload.alias.strip()
             user.preferred_locale = payload.preferred_locale
+            user.baseline_writing_score = payload.baseline_writing_score
+            user.planned_exam_date = payload.planned_exam_date
+            user.exam_reminder_shown_at = None
         else:
             return APIMessage(message="If the address can be registered, a verification email has been queued.")
+
+        add_consent_event(db, user.id, "terms", payload.terms_version, True, request)
+        add_consent_event(db, user.id, "privacy", payload.privacy_version, True, request)
+        if cross_border["visible"]:
+            add_consent_event(db, user.id, "cross_border", payload.cross_border_version, True, request)
+        add_consent_event(
+            db,
+            user.id,
+            "model_improvement",
+            payload.model_improvement_version,
+            payload.model_improvement_accepted,
+            request,
+        )
 
         await _issue_account_token(
             db,
