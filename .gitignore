@@ -29,3 +29,8 @@ design/
 
 # Local dev server and worker logs
 *.log
+
+# PostgreSQL backups may contain account and answer data
+*.dump
+*.backup
+backups/

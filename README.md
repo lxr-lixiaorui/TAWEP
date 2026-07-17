@@ -37,31 +37,32 @@ Create `.env` from `.env.example` and set `OPENAI_API_KEY` to your Deepseek key 
 
 ## Database
 
-Initialize the schema with your Postgres client:
+Create an empty PostgreSQL database, configure `DATABASE_URL` in `.env`, then run the idempotent bootstrap command:
 
 ```powershell
-psql -h localhost -p 5432 -U tawep -d tawep -f backend/db/schema.sql
+python -m backend.db.bootstrap
 ```
 
-For an existing development database, apply the AI Rewrite comparison column with:
+This single command applies the current schema, runs every unapplied migration, records migration checksums, imports missing public question-bank data, and verifies the resulting relationships. It is safe to run again after each `git pull`.
 
-```powershell
-python -m backend.db.migrate_rewrite_comparison
-python -m backend.db.migrate_grammar_offsets
-python -m backend.db.migrate_auth
-python -m backend.db.migrate_admin_accounts
-python -m backend.db.migrate_question_moderation
-python -m backend.db.migrate_report_feedback
-python -m backend.db.migrate_legal_byok
-python -m backend.db.migrate_report_shares
-python -m backend.db.migrate_credit_history
-python -m backend.db.migrate_question_skill_profiles
-python -m backend.db.migrate_exam_outcomes
-python -m backend.db.migrate_platform_settings
-python -m backend.db.annotate_question_skill_profiles
+The deployable seed currently contains 99 accepted public questions and their messages, topics, and recommendation profiles. It intentionally excludes accounts, answers, reports, tokens, email, and API credentials.
+
+On a fresh Ubuntu server, after preparing `.env`, the complete backend/frontend bootstrap is:
+
+```bash
+bash scripts/bootstrap_ubuntu.sh
+bash scripts/run_production.sh
 ```
 
-The schema includes users, topics, questions, uploaded-question review, answer sessions, evaluation reports, grammar analysis, language metrics, credit wallets, credit ledger, inbox messages, exam outcome records, legal documents, and admin audit logs.
+`run_production.sh` starts both FastAPI and the durable AI evaluation worker. `python app.py` starts FastAPI and its email worker only; run `python -m backend.workers.evaluation` separately when not using the production script. The built Vue frontend is served by FastAPI and needs no production Node process.
+
+To run both backend processes at boot under systemd:
+
+```bash
+sudo bash scripts/install_systemd.sh
+```
+
+For transferring an existing database with all relationships and runtime data, use PostgreSQL custom-format `pg_dump`/`pg_restore`, then run the same bootstrap command to apply code versions newer than the backup. See [Database deployment and migration](docs/database-deployment.md).
 
 ## Run
 

@@ -1,6 +1,12 @@
 CREATE EXTENSION IF NOT EXISTS citext;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    name varchar(160) PRIMARY KEY,
+    checksum varchar(64) NOT NULL,
+    applied_at timestamptz NOT NULL DEFAULT now()
+);
+
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'userrole') THEN
