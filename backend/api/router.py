@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from backend.api.routes import admin, auth, dashboard, evaluations, legal, questions, sessions, shares, users
+from backend.api.routes import admin, auth, dashboard, evaluations, legal, questions, sessions, shares, users, webhooks
 
 
 api_router = APIRouter()
@@ -12,4 +12,5 @@ api_router.include_router(sessions.router, prefix="/sessions", tags=["sessions"]
 api_router.include_router(shares.router, tags=["report shares"])
 api_router.include_router(evaluations.router, prefix="/evaluations", tags=["evaluations"])
 api_router.include_router(legal.router, prefix="/legal", tags=["legal"])
+api_router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])

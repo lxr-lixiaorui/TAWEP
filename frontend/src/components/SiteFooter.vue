@@ -39,7 +39,12 @@ const copy = computed(() => app.locale === 'zh'
           </button>
           <div class="site-footer-meta">
             <span>TAWEP · TOEFL Academic Discussion Evaluation Project</span>
-            <nav><router-link to="/agreements">{{ copy.agreements }}</router-link><a href="mailto:feedback@tawep.org">feedback@tawep.org</a></nav>
+            <span>Developed by WFLA AI Lab</span>
+            <nav>
+              <router-link to="/agreements">{{ copy.agreements }}</router-link>
+              <a href="mailto:feedback@tawep.org">feedback@tawep.org</a>
+              <a href="https://github.com/lxr-lixiaorui/TAWEP/" target="_blank" rel="noopener noreferrer">GitHub<ExternalLink :size="13" /></a>
+            </nav>
           </div>
         </div>
       </div>

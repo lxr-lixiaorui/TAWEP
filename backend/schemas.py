@@ -162,6 +162,7 @@ class QuestionCreate(BaseModel):
 
 
 class QuestionUploadCreate(QuestionCreate):
+    exam_type: str = Field(pattern="^(classic|reform_2026)$")
     rights_confirmed: Literal[True]
     rights_statement_version: str = Field(min_length=1, max_length=40)
 
@@ -555,3 +556,43 @@ class AdminExamResultOut(BaseModel):
     improvement: int | None = None
     exam_date: date
     submitted_at: datetime
+
+
+class AdminEmailOutboxOut(BaseModel):
+    id: UUID
+    recipient_email: EmailStr
+    template_key: str
+    locale: str
+    subject: str
+    status: str
+    attempts: int
+    provider_message_id: str | None = None
+    provider_event: str | None = None
+    error_message: str | None = None
+    sent_at: datetime | None = None
+    delivered_at: datetime | None = None
+    failed_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class AdminInboundEmailOut(BaseModel):
+    id: UUID
+    provider_email_id: str
+    sender_email: str
+    to_addresses: list[str]
+    subject: str
+    route_key: str
+    has_attachments: bool
+    received_at: datetime
+    created_at: datetime
+
+
+class AdminInboundEmailDetail(AdminInboundEmailOut):
+    cc_addresses: list[str]
+    bcc_addresses: list[str]
+    reply_to_addresses: list[str]
+    text_body: str | None = None
+    html_body: str | None = None
+    headers: dict
+    attachments: list[dict]

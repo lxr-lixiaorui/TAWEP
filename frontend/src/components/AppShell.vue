@@ -25,19 +25,19 @@ const consentSubmitting = ref(false)
 const consentError = ref('')
 const consentVersion = ref('')
 const reminderCopy = computed(() => app.locale === 'zh' ? {
-  overline: '考试日提醒',
+  overline: '考试日祝福',
   title: `祝你今天考试顺利，${auth.user?.alias ?? ''}`,
   body: '相信你的准备，保持专注，清晰表达自己的观点。祝你发挥出色，取得理想成绩。',
   followup: '成绩公布后，可以从收件箱进入成绩登记页，记录真实提分并帮助我们继续改进 TAWEP。',
   action: '我已阅读，收下祝福',
-  error: '暂时无法保存提醒，请重试。'
+  error: '暂时无法保存祝福，请重试。'
 } : {
-  overline: 'Exam-day reminder',
+  overline: 'Exam-day wishes',
   title: `Good luck today, ${auth.user?.alias ?? ''}`,
   body: 'Trust your preparation, stay focused, and express your ideas clearly. We hope you perform at your best and achieve the score you are aiming for.',
   followup: 'When scores are released, use the link saved to your Inbox to report your verified improvement and help us keep improving TAWEP.',
   action: 'I have read this',
-  error: 'The reminder could not be saved. Please try again.'
+  error: 'The good-luck message could not be saved. Please try again.'
 })
 
 const consentCopy = computed(() => app.locale === 'zh' ? {

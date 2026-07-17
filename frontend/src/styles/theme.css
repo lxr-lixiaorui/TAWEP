@@ -2580,6 +2580,7 @@ button, input, select, textarea { font: inherit; }
 .site-footer-meta { display: grid; justify-items: end; gap: 7px; }
 .site-footer-meta > span { font-size: 12px; }
 .site-footer-meta nav { display: flex; gap: 20px; color: #aebfc1; font-size: 12px; }
+.site-footer-meta nav a { display: inline-flex; align-items: center; gap: 5px; }
 .site-footer-meta a:hover { color: #ffffff; }
 
 @media (max-width: 650px) {

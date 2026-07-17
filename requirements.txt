@@ -7,3 +7,5 @@ openai
 PyJWT
 pwdlib[argon2]
 cryptography
+resend>=2.23,<3
+svix>=1,<2

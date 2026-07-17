@@ -156,8 +156,48 @@ class EmailOutbox(Base):
     payload: Mapped[dict] = mapped_column(JSONB(), default=dict)
     status: Mapped[str] = mapped_column(String(24), default="pending", index=True)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
+    provider_message_id: Mapped[str | None] = mapped_column(String(120), unique=True, nullable=True, index=True)
+    provider_event: Mapped[str | None] = mapped_column(String(40), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    failed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class EmailWebhookEvent(Base):
+    __tablename__ = "email_webhook_events"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    svix_id: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    event_type: Mapped[str] = mapped_column(String(80), index=True)
+    provider_email_id: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
+    payload: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class InboundEmail(Base):
+    __tablename__ = "inbound_emails"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    provider_email_id: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    sender_email: Mapped[str] = mapped_column(String(320), index=True)
+    to_addresses: Mapped[list] = mapped_column(JSONB(), default=list)
+    cc_addresses: Mapped[list] = mapped_column(JSONB(), default=list)
+    bcc_addresses: Mapped[list] = mapped_column(JSONB(), default=list)
+    reply_to_addresses: Mapped[list] = mapped_column(JSONB(), default=list)
+    subject: Mapped[str] = mapped_column(String(500), default="")
+    text_body: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    html_body: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    headers: Mapped[dict] = mapped_column(JSONB(), default=dict)
+    attachments: Mapped[list] = mapped_column(JSONB(), default=list)
+    route_key: Mapped[str] = mapped_column(String(32), default="unrouted", index=True)
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 

@@ -48,7 +48,7 @@ const messages = {
       example: 'Explore an example report',
       noCard: 'Choose any prompt · multilingual reports',
       stats: {
-        prompts: 'official prompts ready to practice',
+        prompts: 'prompts ready to practice',
         topics: 'automatically classified topic groups',
         cost: 'cost to begin',
         dimensions: 'scored writing dimensions'
@@ -338,7 +338,7 @@ const messages = {
       example: '查看示例报告',
       noCard: '任意选题 · 支持多语言报告',
       stats: {
-        prompts: '道可直接练习的官方题目',
+        prompts: '道可直接练习的题目',
         topics: '个自动分类的话题组',
         cost: '开始练习的费用',
         dimensions: '个写作评分维度'

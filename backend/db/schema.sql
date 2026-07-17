@@ -98,13 +98,59 @@ CREATE TABLE IF NOT EXISTS email_outbox (
     payload jsonb NOT NULL DEFAULT '{}'::jsonb,
     status varchar(24) NOT NULL DEFAULT 'pending',
     attempts integer NOT NULL DEFAULT 0,
+    provider_message_id varchar(120) UNIQUE,
+    provider_event varchar(40),
     error_message text,
+    next_attempt_at timestamptz,
+    claimed_at timestamptz,
     sent_at timestamptz,
-    created_at timestamptz NOT NULL DEFAULT now()
+    delivered_at timestamptz,
+    failed_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS ix_email_outbox_template_key ON email_outbox (template_key);
 CREATE INDEX IF NOT EXISTS ix_email_outbox_status ON email_outbox (status);
+CREATE INDEX IF NOT EXISTS ix_email_outbox_provider_message_id ON email_outbox (provider_message_id);
+CREATE INDEX IF NOT EXISTS ix_email_outbox_next_attempt_at ON email_outbox (next_attempt_at);
+
+CREATE TABLE IF NOT EXISTS email_webhook_events (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    svix_id varchar(120) UNIQUE NOT NULL,
+    event_type varchar(80) NOT NULL,
+    provider_email_id varchar(120),
+    payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+    processed_at timestamptz,
+    error_message text,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_email_webhook_events_svix_id ON email_webhook_events (svix_id);
+CREATE INDEX IF NOT EXISTS ix_email_webhook_events_event_type ON email_webhook_events (event_type);
+CREATE INDEX IF NOT EXISTS ix_email_webhook_events_provider_email_id ON email_webhook_events (provider_email_id);
+
+CREATE TABLE IF NOT EXISTS inbound_emails (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider_email_id varchar(120) UNIQUE NOT NULL,
+    sender_email varchar(320) NOT NULL,
+    to_addresses jsonb NOT NULL DEFAULT '[]'::jsonb,
+    cc_addresses jsonb NOT NULL DEFAULT '[]'::jsonb,
+    bcc_addresses jsonb NOT NULL DEFAULT '[]'::jsonb,
+    reply_to_addresses jsonb NOT NULL DEFAULT '[]'::jsonb,
+    subject varchar(500) NOT NULL DEFAULT '',
+    text_body text,
+    html_body text,
+    headers jsonb NOT NULL DEFAULT '{}'::jsonb,
+    attachments jsonb NOT NULL DEFAULT '[]'::jsonb,
+    route_key varchar(32) NOT NULL DEFAULT 'unrouted',
+    received_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_inbound_emails_provider_email_id ON inbound_emails (provider_email_id);
+CREATE INDEX IF NOT EXISTS ix_inbound_emails_sender_email ON inbound_emails (sender_email);
+CREATE INDEX IF NOT EXISTS ix_inbound_emails_route_key ON inbound_emails (route_key);
 
 CREATE INDEX IF NOT EXISTS ix_users_email ON users (email);
 

@@ -11,8 +11,9 @@ const questions = ref<any[]>([])
 const topics = ref<string[]>([])
 const loading = ref(true)
 const loadError = ref(false)
-const totalQuestions = ref(96)
+const totalQuestions = ref<number | null>(null)
 const recommendation = ref<any | null>(null)
+let loadRequestId = 0
 
 const examTypeOptions = computed(() => [
   {
@@ -30,40 +31,39 @@ const examTypeOptions = computed(() => [
 const hasFilters = computed(() => Object.values(filters).some(Boolean))
 const featuredQuestion = computed(() => {
   const recommended = recommendation.value
-  if (recommended) {
-    const question = questions.value.find((item) => item.question_no === recommended.question_no)
-    if (question) return { ...question, ...recommended }
-  }
-  return questions.value[0] ?? null
+  if (!recommended) return null
+  const question = questions.value.find((item) => item.question_no === recommended.question_no)
+  return question ? { ...question, ...recommended } : null
 })
-const remainingQuestions = computed(() => featuredQuestion.value
-  ? questions.value.filter((item) => item.question_no !== featuredQuestion.value.question_no)
-  : questions.value)
+const remainingQuestions = computed(() => questions.value)
 
 async function loadQuestions() {
+  const requestId = ++loadRequestId
   loading.value = true
   loadError.value = false
+  recommendation.value = null
   const params = new URLSearchParams()
   Object.entries(filters).forEach(([key, value]) => {
     if (value) params.set(key, value)
   })
   try {
-    questions.value = await apiGet(`/questions${params.toString() ? `?${params.toString()}` : ''}`)
     const recommendationParams = new URLSearchParams(params)
     recommendationParams.set('limit', '1')
     recommendationParams.set('locale', locale.value.startsWith('zh') ? 'zh' : 'en')
-    try {
-      const result = await apiGet<any[]>(`/questions/recommendations?${recommendationParams.toString()}`)
-      recommendation.value = result[0] ?? null
-    } catch {
-      recommendation.value = null
-    }
-    if (!hasFilters.value) totalQuestions.value = questions.value.length || totalQuestions.value
+    const [loadedQuestions, recommendations] = await Promise.all([
+      apiGet<any[]>(`/questions${params.toString() ? `?${params.toString()}` : ''}`),
+      apiGet<any[]>(`/questions/recommendations?${recommendationParams.toString()}`).catch(() => [])
+    ])
+    if (requestId !== loadRequestId) return
+    questions.value = loadedQuestions
+    recommendation.value = recommendations[0] ?? null
+    if (!hasFilters.value) totalQuestions.value = loadedQuestions.length
   } catch {
+    if (requestId !== loadRequestId) return
     loadError.value = true
     questions.value = []
   } finally {
-    loading.value = false
+    if (requestId === loadRequestId) loading.value = false
   }
 }
 
@@ -98,7 +98,7 @@ watch(locale, () => {
   <AppShell>
     <header class="bank-heading">
       <div>
-        <p class="eyebrow">{{ t('bank.overline', { count: totalQuestions }) }}</p>
+        <p class="eyebrow">{{ t('bank.overline', { count: totalQuestions ?? '—' }) }}</p>
         <h1>{{ t('bank.title') }}</h1>
         <p>{{ t('bank.subtitle') }}</p>
       </div>

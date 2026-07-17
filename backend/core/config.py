@@ -64,8 +64,16 @@ class Settings:
     auth_cookie_samesite = getenv("AUTH_COOKIE_SAMESITE", "lax").lower()
     auth_cookie_domain = getenv("AUTH_COOKIE_DOMAIN") or None
     email_delivery_mode = getenv("EMAIL_DELIVERY_MODE", "outbox").lower()
-    mail_from_email = getenv("MAIL_FROM_EMAIL", "no-reply@localhost")
-    mail_from_name = getenv("MAIL_FROM_NAME", "TAWEP")
+    mail_from_email = getenv("MAIL_FROM_EMAIL", "auth@tawep.org")
+    mail_from_name = getenv("MAIL_FROM_NAME", "TAWEP Accounts")
+    mail_reply_to = getenv("MAIL_REPLY_TO", "authissue@tawep.org")
+    resend_api_key = getenv("RESEND_API_KEY")
+    resend_webhook_secret = getenv("RESEND_WEBHOOK_SECRET")
+    email_worker_poll_seconds = float(getenv("EMAIL_WORKER_POLL_SECONDS", "2"))
+    email_max_attempts = int(getenv("EMAIL_MAX_ATTEMPTS", "5"))
+    inbound_email_domain = getenv("INBOUND_EMAIL_DOMAIN", "tawep.org").lower()
+    auth_support_email = getenv("AUTH_SUPPORT_EMAIL", "authissue@tawep.org").lower()
+    feedback_email = getenv("FEEDBACK_EMAIL", "feedback@tawep.org").lower()
     byok_encryption_key = getenv("BYOK_ENCRYPTION_KEY")
 
     def validate_security(self) -> None:
@@ -77,8 +85,12 @@ class Settings:
             raise RuntimeError("AUTH_COOKIE_SAMESITE must be lax, strict, or none")
         if self.auth_cookie_samesite == "none" and not self.auth_cookie_secure:
             raise RuntimeError("AUTH_COOKIE_SECURE must be true when AUTH_COOKIE_SAMESITE=none")
-        if self.email_delivery_mode != "outbox":
-            raise RuntimeError("Only EMAIL_DELIVERY_MODE=outbox is available until a mail provider is configured")
+        if self.email_delivery_mode not in {"outbox", "resend"}:
+            raise RuntimeError("EMAIL_DELIVERY_MODE must be outbox or resend")
+        if self.email_delivery_mode == "resend" and not self.resend_api_key:
+            raise RuntimeError("RESEND_API_KEY must be configured when EMAIL_DELIVERY_MODE=resend")
+        if self.email_max_attempts < 1:
+            raise RuntimeError("EMAIL_MAX_ATTEMPTS must be at least 1")
         if self.app_env == "production" and not self.byok_encryption_key:
             raise RuntimeError("BYOK_ENCRYPTION_KEY must be configured in production")
 

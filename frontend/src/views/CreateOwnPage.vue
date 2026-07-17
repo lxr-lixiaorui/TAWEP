@@ -12,7 +12,7 @@ const topics = ref<string[]>([])
 const submitting = ref(false)
 const submittedNumber = ref<number | null>(null)
 const form = reactive({
-  topic: '', exam_type: 'classic', difficulty: 'medium', student_a_name: '', student_a_content: '',
+  topic: '', exam_type: '', difficulty: 'medium', student_a_name: '', student_a_content: '',
   student_b_name: '', student_b_content: '', professor_name: '', professor_content: '',
   rights_confirmed: false, rights_statement_version: '2026-07-16'
 })
@@ -28,7 +28,7 @@ const copy = computed(() => app.locale === 'zh' ? {
 } : {
   eyebrow: 'Community question bank', title: 'Create an Academic Discussion prompt', subtitle: 'Submit a complete prompt. It becomes public only after administrator approval.',
   awaiting: 'is awaiting review', inbox: 'You will receive an inbox message after an administrator makes a decision.', back: 'Return to question bank',
-  topic: 'Topic', format: 'Exam format', common: 'Common format', reform: '26 Reform', difficulty: 'Difficulty',
+  topic: 'Topic', format: 'Exam format', common: 'Classic', reform: '26 Reform', difficulty: 'Difficulty',
   easy: 'Easy', medium: 'Medium', hard: 'Hard', professorPrompt: 'Professor prompt', professorHelp: 'Include the discussion context and the question students must answer.',
   professorName: 'Professor name', professorContent: 'Professor content', perspectives: 'Student perspectives', perspectiveHelp: 'Add two distinct viewpoints that a test taker can respond to.',
   studentAName: 'Student A name', studentBName: 'Student B name', studentAContent: 'Student A content', studentBContent: 'Student B content',
@@ -65,7 +65,7 @@ onMounted(async () => { topics.value = await apiGet('/questions/topics'); form.t
     <form v-else class="panel panel-pad submission-form" @submit.prevent="submit">
       <div class="form-grid submission-meta-grid">
         <label class="form-field"><span>{{ copy.topic }}</span><select v-model="form.topic" class="select"><option v-for="topic in topics" :key="topic" :value="topic">{{ topic }}</option></select></label>
-        <label class="form-field"><span>{{ copy.format }}</span><select v-model="form.exam_type" class="select"><option value="classic">{{ copy.common }}</option><option value="reform_2026">{{ copy.reform }}</option></select></label>
+        <label class="form-field"><span>{{ copy.format }}</span><select v-model="form.exam_type" class="select" required><option disabled value="">{{ app.locale === 'zh' ? '请选择考试格式' : 'Select exam format' }}</option><option value="classic">{{ copy.common }}</option><option value="reform_2026">{{ copy.reform }}</option></select></label>
         <label class="form-field"><span>{{ copy.difficulty }}</span><select v-model="form.difficulty" class="select"><option value="easy">{{ copy.easy }}</option><option value="medium">{{ copy.medium }}</option><option value="hard">{{ copy.hard }}</option></select></label>
       </div>
       <div class="submission-section"><span>01</span><div><strong>{{ copy.professorPrompt }}</strong><small>{{ copy.professorHelp }}</small></div></div>

@@ -15,6 +15,7 @@ from backend.models import (
     CreditLedger,
     CreditWallet,
     EmailOutbox,
+    InboundEmail,
     EvaluationReport,
     InboxMessage,
     Question,
@@ -42,6 +43,9 @@ from backend.schemas import (
     AdminQuestionUpdate,
     AdminReportFeedbackOut,
     AdminExamResultOut,
+    AdminEmailOutboxOut,
+    AdminInboundEmailDetail,
+    AdminInboundEmailOut,
     AdminReviewDecision,
     AdminUserCreate,
     CrossBorderConfigOut,
@@ -269,6 +273,70 @@ async def accounts(db: AsyncSession = Depends(get_db)) -> list[AdminAccountOut]:
         )
         for user, balance in rows
     ]
+
+
+@router.get("/emails/outbox", response_model=list[AdminEmailOutboxOut])
+async def email_outbox(
+    delivery_status: str | None = Query(default=None, alias="status", max_length=24),
+    limit: int = Query(default=100, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+) -> list[AdminEmailOutboxOut]:
+    statement = select(EmailOutbox)
+    if delivery_status:
+        statement = statement.where(EmailOutbox.status == delivery_status)
+    emails = (await db.scalars(statement.order_by(EmailOutbox.created_at.desc()).limit(limit))).all()
+    return [AdminEmailOutboxOut.model_validate(email, from_attributes=True) for email in emails]
+
+
+@router.get("/emails/inbound", response_model=list[AdminInboundEmailOut])
+async def inbound_emails(
+    route_key: str | None = Query(default=None, pattern="^(auth|feedback|unrouted)$"),
+    limit: int = Query(default=100, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+) -> list[AdminInboundEmailOut]:
+    statement = select(InboundEmail)
+    if route_key:
+        statement = statement.where(InboundEmail.route_key == route_key)
+    emails = (await db.scalars(statement.order_by(InboundEmail.received_at.desc()).limit(limit))).all()
+    return [
+        AdminInboundEmailOut(
+            id=email.id,
+            provider_email_id=email.provider_email_id,
+            sender_email=email.sender_email,
+            to_addresses=list(email.to_addresses or []),
+            subject=email.subject,
+            route_key=email.route_key,
+            has_attachments=bool(email.attachments),
+            received_at=email.received_at,
+            created_at=email.created_at,
+        )
+        for email in emails
+    ]
+
+
+@router.get("/emails/inbound/{email_id}", response_model=AdminInboundEmailDetail)
+async def inbound_email_detail(email_id: UUID, db: AsyncSession = Depends(get_db)) -> AdminInboundEmailDetail:
+    email = await db.get(InboundEmail, email_id)
+    if email is None:
+        raise HTTPException(status_code=404, detail="Inbound email not found")
+    return AdminInboundEmailDetail(
+        id=email.id,
+        provider_email_id=email.provider_email_id,
+        sender_email=email.sender_email,
+        to_addresses=list(email.to_addresses or []),
+        cc_addresses=list(email.cc_addresses or []),
+        bcc_addresses=list(email.bcc_addresses or []),
+        reply_to_addresses=list(email.reply_to_addresses or []),
+        subject=email.subject,
+        text_body=email.text_body,
+        html_body=email.html_body,
+        headers=dict(email.headers or {}),
+        attachments=list(email.attachments or []),
+        route_key=email.route_key,
+        has_attachments=bool(email.attachments),
+        received_at=email.received_at,
+        created_at=email.created_at,
+    )
 
 
 @router.post("/accounts", response_model=AdminAccountOut, status_code=status.HTTP_201_CREATED)
